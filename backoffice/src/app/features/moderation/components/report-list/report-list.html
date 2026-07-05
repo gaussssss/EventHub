@@ -1,0 +1,100 @@
+<div class="flex flex-col gap-5">
+  <!-- En-tête -->
+  <div class="flex items-center justify-between gap-4 flex-wrap">
+    <div>
+      <h1 class="text-2xl font-semibold">Modération</h1>
+      <p class="text-sm text-base-content/60 mt-0.5">
+        File des signalements ouverts — masquez les contenus problématiques.
+      </p>
+    </div>
+    <button class="btn btn-ghost btn-sm gap-1" (click)="load.handler()">
+      <span class="icon-[fluent--arrow-clockwise-24-regular]"></span>
+      Actualiser
+    </button>
+  </div>
+
+  <!-- Chargement -->
+  @if (load.isLoading()) {
+    <div class="flex justify-center py-16">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  }
+
+  <!-- Vide -->
+  @if (!load.isLoading() && states.reports().length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 gap-2 text-base-content/40">
+      <span class="icon-[fluent--shield-checkmark-24-regular] text-5xl text-success/60"></span>
+      <p>Aucun signalement ouvert. 🎉</p>
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!load.isLoading() && states.reports().length > 0) {
+    <div class="overflow-x-auto bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)]">
+      <table class="table table-sm">
+        <thead>
+          <tr class="text-base-content/60">
+            <th>Cible</th>
+            <th>Contenu signalé</th>
+            <th>Motif</th>
+            <th>Signalé par</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (report of states.reports(); track report.id) {
+            <tr class="hover:bg-base-200/60" [class.opacity-50]="hide.hidingId() === report.id">
+              <td>
+                <div class="flex items-center gap-2">
+                  <span class="{{ targetIcon(report.targetType) }} text-lg text-base-content/60"></span>
+                  <div>
+                    <div class="font-medium">{{ targetLabel(report.targetType) }}</div>
+                    <div class="text-xs text-base-content/40 font-mono">{{ shortId(report.targetId) }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="max-w-sm">
+                <div class="flex items-start gap-2">
+                  @if (report.targetImageUrl) {
+                    <img
+                      [src]="report.targetImageUrl"
+                      alt="contenu signalé"
+                      class="w-10 h-10 rounded-[var(--az-radius)] object-cover border border-base-300 shrink-0" />
+                  }
+                  <div class="min-w-0">
+                    @if (report.targetAuthorName) {
+                      <div class="text-xs text-base-content/50">par {{ report.targetAuthorName }}</div>
+                    }
+                    <div class="line-clamp-2 text-sm">
+                      {{ report.targetPreview || '(contenu indisponible)' }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="max-w-xs">
+                <span class="line-clamp-2 text-base-content/70">{{ report.reason }}</span>
+              </td>
+              <td>
+                <div>{{ report.reporterName || '—' }}</div>
+                <div class="text-xs text-base-content/40 whitespace-nowrap">
+                  {{ report.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+                </div>
+              </td>
+              <td class="text-right">
+                <button
+                  class="btn btn-error btn-outline btn-xs gap-1"
+                  [disabled]="hide.hidingId() === report.id"
+                  (click)="openHide(report)">
+                  <span class="icon-[fluent--eye-off-24-regular]"></span>
+                  Examiner…
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-hide-confirm />

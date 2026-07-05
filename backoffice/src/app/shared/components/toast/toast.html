@@ -1,0 +1,11 @@
+<div class="alert {{ alertClass() }} rounded-[var(--az-radius)] text-sm py-2.5">
+  <span class="{{ icon() }} text-lg shrink-0"></span>
+  <span class="flex-1">{{ toast().message }}</span>
+  <button
+    type="button"
+    class="btn btn-ghost btn-xs btn-circle"
+    aria-label="Fermer"
+    (click)="closed.emit(toast().id)">
+    <span class="icon-[fluent--dismiss-24-regular]"></span>
+  </button>
+</div>

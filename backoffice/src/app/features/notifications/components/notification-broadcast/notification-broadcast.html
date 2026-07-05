@@ -1,0 +1,40 @@
+<div class="flex flex-col gap-5">
+  <div>
+    <h1 class="text-2xl font-semibold">Notifications</h1>
+    <p class="text-sm text-base-content/60 mt-0.5">
+      Diffuser une notification push à une audience.
+    </p>
+  </div>
+
+  <div class="bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)] p-6 max-w-xl">
+    <label class="block text-sm font-medium mb-1">Audience</label>
+    <select class="select select-bordered w-full mb-1"
+      [ngModel]="audience()" (ngModelChange)="audience.set($event)">
+      <option value="all">Tout le monde</option>
+    </select>
+    <p class="text-xs text-base-content/40 mb-4">
+      Les segments ciblés (par rôle, par activité…) arriveront ; pour l'instant : tous les utilisateurs.
+    </p>
+
+    <label class="block text-sm font-medium mb-1">Titre *</label>
+    <input type="text" class="input input-bordered w-full mb-3" maxlength="120"
+      placeholder="ex. Rappel : inscription bientôt clôturée"
+      [ngModel]="title()" (ngModelChange)="title.set($event)" />
+
+    <label class="block text-sm font-medium mb-1">Message *</label>
+    <textarea class="textarea textarea-bordered w-full mb-5" rows="4" maxlength="500"
+      placeholder="Contenu de la notification…"
+      [ngModel]="body()" (ngModelChange)="body.set($event)"></textarea>
+
+    <div class="flex justify-end">
+      <button class="btn btn-primary btn-sm gap-1" [disabled]="send.isSending()" (click)="submit()">
+        @if (send.isSending()) {
+          <span class="loading loading-spinner loading-xs"></span>
+        } @else {
+          <span class="icon-[fluent--send-24-regular]"></span>
+        }
+        Diffuser
+      </button>
+    </div>
+  </div>
+</div>

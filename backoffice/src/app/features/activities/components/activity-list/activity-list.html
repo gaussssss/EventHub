@@ -1,0 +1,124 @@
+<div class="flex flex-col gap-5">
+  <!-- En-tête -->
+  <div class="flex items-center justify-between gap-4 flex-wrap">
+    <div>
+      <h1 class="text-2xl font-semibold">Activités</h1>
+      <p class="text-sm text-base-content/60 mt-0.5">
+        Toutes les activités — publiez, annulez, mettez à la une.
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="btn btn-ghost btn-sm gap-1" (click)="load.handler()">
+        <span class="icon-[fluent--arrow-clockwise-24-regular]"></span>
+        Actualiser
+      </button>
+      <button class="btn btn-primary btn-sm gap-1" (click)="openCreate()">
+        <span class="icon-[fluent--add-24-regular]"></span>
+        Nouvelle activité
+      </button>
+    </div>
+  </div>
+
+  <!-- Chargement -->
+  @if (load.isLoading()) {
+    <div class="flex justify-center py-16">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  }
+
+  <!-- Vide -->
+  @if (!load.isLoading() && states.activities().length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 gap-2 text-base-content/40">
+      <span class="icon-[fluent--calendar-ltr-24-regular] text-5xl"></span>
+      <p>Aucune activité.</p>
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!load.isLoading() && states.activities().length > 0) {
+    <div class="overflow-x-auto bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)]">
+      <table class="table table-sm">
+        <thead>
+          <tr class="text-base-content/60">
+            <th>Activité</th>
+            <th>Date</th>
+            <th>Statut</th>
+            <th class="text-center">Inscrits</th>
+            <th class="text-center">À la une</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (activity of states.activities(); track activity.id) {
+            <tr class="hover:bg-base-200/60" [class.opacity-50]="actions.busyId() === activity.id">
+              <td>
+                <div class="font-medium">{{ activity.title }}</div>
+                <div class="text-xs text-base-content/50">
+                  {{ activity.category }} · {{ activity.location }}
+                </div>
+              </td>
+              <td class="whitespace-nowrap text-base-content/70">
+                {{ activity.startsAt | date: 'dd/MM/yyyy HH:mm' }}
+              </td>
+              <td>
+                <span class="badge badge-sm {{ statusBadge(activity.status) }}">
+                  {{ statusLabel(activity.status) }}
+                </span>
+              </td>
+              <td class="text-center tabular-nums">
+                {{ activity.currentParticipants }}/{{ activity.maxParticipants }}
+              </td>
+              <td class="text-center">
+                <button
+                  class="btn btn-ghost btn-xs btn-square"
+                  [class.text-warning]="activity.isFeatured"
+                  [disabled]="actions.busyId() === activity.id"
+                  [attr.aria-label]="activity.isFeatured ? 'Retirer de la une' : 'Mettre à la une'"
+                  (click)="actions.toggleFeature(activity.id)">
+                  <span class="{{ featureIcon(activity.isFeatured) }} text-lg"></span>
+                </button>
+              </td>
+              <td class="text-right">
+                <div class="flex justify-end gap-1">
+                  <a
+                    class="btn btn-ghost btn-xs gap-1"
+                    [routerLink]="['/activities', activity.id, 'registrations']">
+                    <span class="icon-[fluent--people-24-regular]"></span>
+                    Inscrits
+                  </a>
+                  <button
+                    class="btn btn-ghost btn-xs gap-1"
+                    [disabled]="actions.busyId() === activity.id"
+                    (click)="openEdit(activity)">
+                    <span class="icon-[fluent--edit-24-regular]"></span>
+                    Éditer
+                  </button>
+                  @if (!isPublished(activity.status)) {
+                    <button
+                      class="btn btn-outline btn-xs gap-1"
+                      [disabled]="actions.busyId() === activity.id"
+                      (click)="actions.publish(activity.id)">
+                      <span class="icon-[fluent--globe-24-regular]"></span>
+                      Publier
+                    </button>
+                  }
+                  @if (isPublished(activity.status)) {
+                    <button
+                      class="btn btn-outline btn-error btn-xs gap-1"
+                      [disabled]="actions.busyId() === activity.id"
+                      (click)="confirmCancel(activity)">
+                      <span class="icon-[fluent--dismiss-circle-24-regular]"></span>
+                      Annuler
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-activity-form />

@@ -1,0 +1,71 @@
+<div class="flex flex-col gap-5">
+  <!-- En-tête -->
+  <div class="flex items-center justify-between gap-4 flex-wrap">
+    <div>
+      <h1 class="text-2xl font-semibold">Organisateurs</h1>
+      <p class="text-sm text-base-content/60 mt-0.5">
+        Référentiel des organisateurs associés aux activités.
+      </p>
+    </div>
+    <button class="btn btn-primary btn-sm gap-1" (click)="openCreate()">
+      <span class="icon-[fluent--add-24-regular]"></span>
+      Nouvel organisateur
+    </button>
+  </div>
+
+  <!-- Chargement -->
+  @if (load.isLoading()) {
+    <div class="flex justify-center py-16">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  }
+
+  <!-- Vide -->
+  @if (!load.isLoading() && states.organizers().length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 gap-2 text-base-content/40">
+      <span class="icon-[fluent--people-team-24-regular] text-5xl"></span>
+      <p>Aucun organisateur.</p>
+      <button class="btn btn-primary btn-sm" (click)="openCreate()">Créer le premier</button>
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!load.isLoading() && states.organizers().length > 0) {
+    <div class="overflow-x-auto bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)]">
+      <table class="table table-sm">
+        <thead>
+          <tr class="text-base-content/60">
+            <th>Nom</th>
+            <th>Courriel</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (organizer of states.organizers(); track organizer.id) {
+            <tr class="hover:bg-base-200/60" [class.opacity-50]="del.deletingId() === organizer.id">
+              <td class="font-medium">{{ organizer.name }}</td>
+              <td class="text-base-content/60">{{ organizer.contactEmail || '—' }}</td>
+              <td class="text-right">
+                <div class="flex justify-end gap-1">
+                  <button class="btn btn-ghost btn-xs gap-1" (click)="openEdit(organizer)">
+                    <span class="icon-[fluent--edit-24-regular]"></span>
+                    Éditer
+                  </button>
+                  <button
+                    class="btn btn-ghost btn-xs text-error gap-1"
+                    [disabled]="del.deletingId() === organizer.id"
+                    (click)="confirmDelete(organizer)">
+                    <span class="icon-[fluent--delete-24-regular]"></span>
+                    Supprimer
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-organizer-form />

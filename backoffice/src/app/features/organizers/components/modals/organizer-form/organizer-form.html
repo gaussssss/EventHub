@@ -1,0 +1,39 @@
+@if (modals.isOpen('organizer-form')) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
+    <div class="w-full max-w-sm bg-base-100 rounded-[var(--az-radius-lg)] border border-base-300 p-6">
+      <h2 class="text-lg font-semibold mb-4">
+        {{ isEdit() ? "Modifier l'organisateur" : 'Nouvel organisateur' }}
+      </h2>
+
+      <label class="block text-sm font-medium mb-1">Nom *</label>
+      <input
+        type="text"
+        class="input input-bordered w-full mb-3"
+        placeholder="ex. Association sportive UQTR"
+        [ngModel]="name()"
+        (ngModelChange)="name.set($event)" />
+
+      <label class="block text-sm font-medium mb-1">Courriel de contact</label>
+      <input
+        type="email"
+        class="input input-bordered w-full mb-5"
+        placeholder="ex. contact@uqtr.ca"
+        [ngModel]="contactEmail()"
+        (ngModelChange)="contactEmail.set($event)" />
+
+      <div class="flex justify-end gap-2">
+        <button type="button" class="btn btn-ghost btn-sm" (click)="close()">Annuler</button>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          [disabled]="save.isSaving()"
+          (click)="submit()">
+          @if (save.isSaving()) {
+            <span class="loading loading-spinner loading-xs"></span>
+          }
+          {{ isEdit() ? 'Enregistrer' : 'Créer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,102 @@
+/**
+ * EventHub Back Office — Thème « Azure » (inspiré du portail Microsoft Azure /
+ * Fluent Design). Fichier de thème DÉDIÉ : tokens de design réutilisables +
+ * styles de base. Volontairement indépendant de daisyUI — si daisyUI ne convient
+ * pas pour un composant, on style directement avec ces variables `--az-*`.
+ *
+ * Palette : neutres Fluent + « communication blue » #0078D4.
+ * Typo : Segoe UI. Radii courts (2px). Ombres de profondeur Fluent.
+ */
+
+:root {
+  /* Bleu Azure (communication blue) + états */
+  --az-primary: #0078d4;
+  --az-primary-hover: #106ebe;
+  --az-primary-pressed: #005a9e;
+  --az-primary-tint: #deecf9;
+  --az-on-primary: #ffffff;
+
+  /* Barre supérieure : bleu Azure vif (comme le portail). */
+  --az-topbar: #0f6cbd;
+
+  /* Neutres (légèrement froids/lavande pour un rendu clair et lumineux). */
+  --az-white: #ffffff;
+  --az-neutral-lighter-alt: #fafbfe;
+  --az-neutral-lighter: #f3f4fa; /* fond de page */
+  --az-neutral-light: #e5e7f0; /* bordures / séparateurs */
+  --az-neutral-quaternary-alt: #dcdee9;
+  --az-neutral-quaternary: #cdd0de;
+  --az-neutral-tertiary-alt: #c2c5d4;
+  --az-neutral-tertiary: #9ea2b3;
+  --az-neutral-secondary: #5d6070; /* texte secondaire */
+  --az-neutral-primary: #242731; /* texte principal */
+  --az-neutral-dark: #1b1e27;
+
+  /* Sémantique */
+  --az-success: #107c10;
+  --az-warning: #ffb900;
+  --az-error: #d13438;
+  --az-info: #0078d4;
+
+  /* Formes : coins arrondis, AUCUNE ombre — la hiérarchie passe par des
+     bordures fines et les aplats de couleur (UI plate, lumineuse). */
+  --az-radius: 4px;
+  --az-radius-lg: 8px;
+
+  /* Typographie Fluent */
+  --az-font-sans: 'Segoe UI', 'Segoe UI Web (West European)', -apple-system,
+    BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+}
+
+/* Styles de base globaux */
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--az-font-sans);
+  color: var(--az-neutral-primary);
+  background: var(--az-neutral-lighter);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Barre de défilement discrète, façon portail */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--az-neutral-tertiary) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--az-neutral-tertiary-alt);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--az-neutral-tertiary);
+  background-clip: content-box;
+}
+
+/* Anneau de focus accessible, couleur Azure */
+:focus-visible {
+  outline: 2px solid var(--az-primary);
+  outline-offset: 1px;
+}
+
+/* Thème sombre : ajuste les tokens Fluent utilisés hors daisyUI
+   (fond de page, barre de défilement, texte). La barre supérieure (--az-topbar)
+   et le bleu primaire restent identiques dans les deux thèmes. */
+:root[data-theme='azure-dark'] {
+  --az-neutral-lighter: #1b1e27; /* fond de page */
+  --az-neutral-light: #292b33; /* bordures / séparateurs */
+  --az-neutral-tertiary-alt: #3a3d47;
+  --az-neutral-tertiary: #5d6070;
+  --az-neutral-secondary: #a9adbb;
+  --az-neutral-primary: #f3f4fa; /* texte principal */
+}

@@ -1,0 +1,7 @@
+# Les tests marqués @Tags(['live']) nécessitent l'API EventHub en marche.
+# Ils sont ignorés par défaut (`flutter test`) pour ne pas casser la CI, et se
+# lancent à la demande :
+#   flutter test --run-skipped --tags live
+tags:
+  live:
+    skip: "Test live : nécessite l'API en marche (flutter test --run-skipped --tags live)."

@@ -1,0 +1,49 @@
+@if (modals.isOpen('moderation-hide')) {
+  @if (data(); as d) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4 py-6">
+      <div
+        class="w-full max-w-lg bg-base-100 rounded-[var(--az-radius-lg)] border border-base-300 flex flex-col max-h-[90vh]">
+        <div class="px-6 py-4 border-b border-base-300">
+          <h2 class="text-lg font-semibold">Masquer ce contenu ?</h2>
+          <p class="text-sm text-base-content/60 mt-0.5">
+            {{ isComment() ? 'Commentaire' : 'Publication' }} signalé(e)
+            @if (d.authorName) { · par {{ d.authorName }} }
+          </p>
+        </div>
+
+        <!-- Prévisualisation -->
+        <div class="px-6 py-4 overflow-y-auto flex flex-col gap-3">
+          @if (d.imageUrl) {
+            <img
+              [src]="d.imageUrl"
+              alt="contenu signalé"
+              class="w-full max-h-72 object-cover rounded-[var(--az-radius)] border border-base-300" />
+          }
+          <div class="bg-base-200 rounded-[var(--az-radius)] p-3 text-sm whitespace-pre-wrap break-words">
+            {{ d.preview || '(contenu indisponible)' }}
+          </div>
+          <div class="text-sm">
+            <span class="text-base-content/50">Motif du signalement :</span>
+            {{ d.reason }}
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-base-300 flex justify-end gap-2">
+          <button type="button" class="btn btn-ghost btn-sm" (click)="close()">Annuler</button>
+          <button
+            type="button"
+            class="btn btn-error btn-sm gap-1 text-white"
+            [disabled]="busy()"
+            (click)="confirm()">
+            @if (busy()) {
+              <span class="loading loading-spinner loading-xs"></span>
+            } @else {
+              <span class="icon-[fluent--eye-off-24-regular]"></span>
+            }
+            Masquer
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+}

@@ -1,0 +1,55 @@
+<header
+  class="h-14 shrink-0 flex items-center justify-between pl-2 pr-4 text-white"
+  style="background: var(--az-topbar)">
+  <!-- Bascule du rail + identité produit -->
+  <div class="flex items-center gap-1">
+    <button
+      type="button"
+      class="btn btn-ghost btn-sm btn-square text-white hover:bg-white/15"
+      aria-label="Afficher/masquer le menu"
+      (click)="ui.toggleSidebar()">
+      <span class="icon-[fluent--line-horizontal-3-24-regular] text-xl"></span>
+    </button>
+    <span class="text-base font-semibold tracking-tight ml-1">EventHub</span>
+    <span class="text-white/60 text-sm hidden sm:inline">·</span>
+    <span class="text-white/80 text-sm hidden sm:inline">Back Office</span>
+  </div>
+
+  <div class="flex items-center gap-1">
+    <!-- Bascule du thème -->
+    <button
+      type="button"
+      class="btn btn-ghost btn-sm btn-square text-white hover:bg-white/15"
+      [attr.aria-label]="theme.isDark() ? 'Passer en thème clair' : 'Passer en thème sombre'"
+      (click)="theme.toggle()">
+      <span class="{{ themeIcon() }} text-lg"></span>
+    </button>
+
+    <!-- Utilisateur -->
+    <div class="dropdown dropdown-end">
+    <button
+      tabindex="0"
+      class="flex items-center gap-2 pl-2 pr-1 py-1 rounded-[var(--az-radius)] hover:bg-white/15 transition-colors">
+      <span class="hidden sm:flex flex-col items-end leading-tight">
+        <span class="text-sm text-white/95">{{ name() }}</span>
+        <span class="text-[11px] text-white/70">{{ account()?.username }}</span>
+      </span>
+      <span
+        class="inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold bg-white/20">
+        {{ initials() }}
+      </span>
+    </button>
+    <ul
+      tabindex="0"
+      class="dropdown-content menu bg-base-100 text-base-content rounded-box mt-2 p-1 z-50 border border-base-300">
+      <li class="menu-title text-xs truncate">{{ account()?.username }}</li>
+      <li>
+        <button type="button" (click)="signOut()">
+          <span class="icon-[fluent--sign-out-24-regular] text-base"></span>
+          Se déconnecter
+        </button>
+      </li>
+    </ul>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,41 @@
+@if (modals.isOpen('award-hearts')) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
+    <div class="w-full max-w-sm bg-base-100 rounded-[var(--az-radius-lg)] border border-base-300 p-6">
+      <h2 class="text-lg font-semibold mb-1">Ajuster les cœurs</h2>
+      <p class="text-sm text-base-content/60 mb-4 inline-flex items-center gap-1">
+        {{ data()?.name }} — actuel : {{ data()?.totalHearts }}
+        <span class="icon-[fluent--heart-24-filled] text-error"></span>
+      </p>
+
+      <label class="block text-sm font-medium mb-1">Ajustement (peut être négatif)</label>
+      <input
+        type="number"
+        class="input input-bordered w-full mb-3"
+        [ngModel]="hearts()"
+        (ngModelChange)="hearts.set($event)"
+        placeholder="ex. 50 ou -20" />
+
+      <label class="block text-sm font-medium mb-1">Motif (optionnel)</label>
+      <input
+        type="text"
+        class="input input-bordered w-full mb-5"
+        [ngModel]="reason()"
+        (ngModelChange)="reason.set($event)"
+        placeholder="ex. correction manuelle" />
+
+      <div class="flex justify-end gap-2">
+        <button type="button" class="btn btn-ghost btn-sm" (click)="close()">Annuler</button>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          [disabled]="award.isSaving()"
+          (click)="submit()">
+          @if (award.isSaving()) {
+            <span class="loading loading-spinner loading-xs"></span>
+          }
+          Appliquer
+        </button>
+      </div>
+    </div>
+  </div>
+}

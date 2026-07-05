@@ -1,0 +1,99 @@
+@use 'tailwindcss';
+
+/* Icônes Fluent (Iconify) → classes utilitaires `icon-[fluent--<nom>]`.
+   Les données viennent du paquet @iconify-json/fluent (même set que le portail
+   Azure). Taille par défaut 1em → se règle avec text-* ou les tailles w/h. */
+@plugin "@iconify/tailwind4" {
+}
+
+/* Thème daisyUI « azure » (light) + « azure-dark » (dark), calés sur la palette
+   Fluent. Le portail Azure est clair par défaut ; le sombre suit prefers-dark. */
+@plugin "daisyui" {
+  themes: azure --default, azure-dark --prefersdark;
+}
+
+@plugin "daisyui/theme" {
+  name: 'azure';
+  default: true;
+  color-scheme: light;
+
+  --color-base-100: #ffffff;
+  --color-base-200: #f3f4fa;
+  --color-base-300: #e5e7f0;
+  --color-base-content: #242731;
+
+  --color-primary: #0078d4;
+  --color-primary-content: #ffffff;
+  --color-secondary: #5d6070;
+  --color-secondary-content: #ffffff;
+  --color-accent: #0f6cbd;
+  --color-accent-content: #ffffff;
+  --color-neutral: #242731;
+  --color-neutral-content: #ffffff;
+
+  --color-info: #0078d4;
+  --color-info-content: #ffffff;
+  --color-success: #107c10;
+  --color-success-content: #ffffff;
+  --color-warning: #ffb900;
+  --color-warning-content: #201f1e;
+  --color-error: #d13438;
+  --color-error-content: #ffffff;
+
+  /* Coins arrondis, bordures fines, AUCUNE ombre (--depth: 0) */
+  --radius-selector: 6px;
+  --radius-field: 6px;
+  --radius-box: 8px;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: 'azure-dark';
+  color-scheme: dark;
+
+  --color-base-100: #1b1a19;
+  --color-base-200: #201f1e;
+  --color-base-300: #292827;
+  --color-base-content: #f3f2f1;
+
+  --color-primary: #2b88d8;
+  --color-primary-content: #ffffff;
+  --color-secondary: #a19f9d;
+  --color-secondary-content: #201f1e;
+  --color-accent: #6cb8f6;
+  --color-accent-content: #201f1e;
+  --color-neutral: #edebe9;
+  --color-neutral-content: #201f1e;
+
+  --color-info: #2b88d8;
+  --color-info-content: #ffffff;
+  --color-success: #6bb700;
+  --color-success-content: #201f1e;
+  --color-warning: #ffb900;
+  --color-warning-content: #201f1e;
+  --color-error: #f1707b;
+  --color-error-content: #201f1e;
+
+  --radius-selector: 6px;
+  --radius-field: 6px;
+  --radius-box: 8px;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+/* NB : les tokens Fluent dédiés + styles de base vivent dans
+   `src/styles/azure-theme.scss`, inclus comme entrée de style séparée via
+   angular.json (indépendant de daisyUI, utilisable tel quel). */
+
+/* La police Fluent s'applique à toute l'app */
+:root {
+  --font-sans: 'Segoe UI', 'Segoe UI Web (West European)', -apple-system,
+    BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+}

@@ -1,0 +1,41 @@
+<div class="min-h-screen flex items-center justify-center bg-base-200 px-4">
+  <div class="w-full max-w-sm bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)] p-8">
+    <!-- Logo / titre -->
+    <div class="flex flex-col items-center text-center gap-1 mb-8">
+      <span
+        class="inline-flex items-center justify-center w-12 h-12 rounded-[var(--az-radius-lg)] text-white text-lg font-bold mb-2"
+        style="background: var(--az-primary)">
+        E
+      </span>
+      <h1 class="text-xl font-semibold">EventHub — Back Office</h1>
+      <p class="text-sm text-base-content/60">Administration UQTR</p>
+    </div>
+
+    <!-- Bouton Microsoft -->
+    <button
+      type="button"
+      class="btn w-full gap-2 text-white border-0"
+      style="background: var(--az-primary)"
+      [disabled]="isLoading()"
+      (click)="signIn()">
+      @if (isLoading()) {
+        <span class="loading loading-spinner loading-sm"></span>
+        Connexion…
+      } @else {
+        <span class="font-bold">⊞</span>
+        Se connecter avec Microsoft
+      }
+    </button>
+
+    @if (!isConfigured) {
+      <p class="mt-4 text-xs text-warning text-center">
+        ⚠ Entra non configuré — renseigner <code>entra.clientId</code> (app SPA)
+        dans l'environnement.
+      </p>
+    }
+
+    <p class="mt-6 text-xs text-base-content/40 text-center">
+      Réservé aux rôles organizer / moderator / admin.
+    </p>
+  </div>
+</div>

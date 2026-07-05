@@ -1,0 +1,105 @@
+<div class="flex flex-col gap-5">
+  <!-- En-tête -->
+  <div class="flex items-center justify-between gap-4 flex-wrap">
+    <div>
+      <h1 class="text-2xl font-semibold">Utilisateurs &amp; rôles</h1>
+      <p class="text-sm text-base-content/60 mt-0.5">
+        Rechercher, changer le rôle / statut, ajuster les cœurs.
+      </p>
+    </div>
+    <div class="join">
+      <input
+        type="text"
+        class="input input-bordered input-sm join-item w-64"
+        placeholder="Rechercher un nom ou courriel…"
+        [ngModel]="load.query()"
+        (ngModelChange)="load.query.set($event)"
+        (keyup.enter)="search()" />
+      <button class="btn btn-primary btn-sm join-item gap-1" (click)="search()">
+        <span class="icon-[fluent--search-24-regular]"></span>
+        Rechercher
+      </button>
+    </div>
+  </div>
+
+  <!-- Chargement -->
+  @if (load.isLoading()) {
+    <div class="flex justify-center py-16">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  }
+
+  <!-- Vide -->
+  @if (!load.isLoading() && states.users().length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 gap-2 text-base-content/40">
+      <span class="icon-[fluent--people-team-24-regular] text-5xl"></span>
+      <p>Aucun utilisateur trouvé.</p>
+    </div>
+  }
+
+  <!-- Tableau -->
+  @if (!load.isLoading() && states.users().length > 0) {
+    <div class="overflow-x-auto bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)]">
+      <table class="table table-sm">
+        <thead>
+          <tr class="text-base-content/60">
+            <th>Utilisateur</th>
+            <th>Rôle</th>
+            <th>Statut</th>
+            <th class="text-right">Cœurs</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of states.users(); track user.id) {
+            <tr class="hover:bg-base-200/60" [class.opacity-50]="update.savingId() === user.id">
+              <td>
+                <div class="font-medium">{{ user.name || '—' }}</div>
+                <div class="text-xs text-base-content/50">{{ user.email }}</div>
+              </td>
+              <td>
+                <select
+                  class="select select-bordered select-xs w-32"
+                  [disabled]="update.savingId() === user.id"
+                  [value]="user.role"
+                  (change)="changeRole(user, $any($event.target).value)">
+                  @for (role of roles; track role) {
+                    <option [value]="role" [selected]="role === user.role">{{ role }}</option>
+                  }
+                </select>
+              </td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <span class="badge badge-sm {{ statusBadge(user.status) }}">{{ user.status }}</span>
+                  <select
+                    class="select select-bordered select-xs w-28"
+                    [disabled]="update.savingId() === user.id"
+                    [value]="user.status"
+                    (change)="changeStatus(user, $any($event.target).value)">
+                    @for (status of statuses; track status) {
+                      <option [value]="status" [selected]="status === user.status">{{ status }}</option>
+                    }
+                  </select>
+                </div>
+              </td>
+              <td class="text-right tabular-nums font-medium">
+                <span class="inline-flex items-center gap-1 justify-end">
+                  {{ user.totalHearts }}
+                  <span class="icon-[fluent--heart-24-filled] text-error"></span>
+                </span>
+              </td>
+              <td class="text-right">
+                <button class="btn btn-ghost btn-xs gap-1" (click)="openHearts(user)">
+                  <span class="icon-[fluent--heart-24-regular]"></span>
+                  Ajuster
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-award-hearts />

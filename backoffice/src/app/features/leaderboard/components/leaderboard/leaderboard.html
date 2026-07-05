@@ -1,0 +1,85 @@
+<div class="flex flex-col gap-5">
+  <!-- En-tête -->
+  <div class="flex items-center justify-between gap-4 flex-wrap">
+    <div>
+      <h1 class="text-2xl font-semibold">Classement</h1>
+      <p class="text-sm text-base-content/60 mt-0.5">Classement global des cœurs santé.</p>
+    </div>
+    <button class="btn btn-ghost btn-sm gap-1" (click)="load.handler(load.page())">
+      <span class="icon-[fluent--arrow-clockwise-24-regular]"></span>
+      Actualiser
+    </button>
+  </div>
+
+  <!-- Chargement -->
+  @if (load.isLoading() && states.rows().length === 0) {
+    <div class="flex justify-center py-16">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  }
+
+  <!-- Vide -->
+  @if (!load.isLoading() && states.rows().length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 gap-2 text-base-content/40">
+      <span class="icon-[fluent--trophy-24-regular] text-5xl"></span>
+      <p>Classement vide.</p>
+    </div>
+  }
+
+  <!-- Table -->
+  @if (states.rows().length > 0) {
+    <div class="overflow-x-auto bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)]">
+      <table class="table table-sm">
+        <thead>
+          <tr class="text-base-content/60">
+            <th class="w-16">Rang</th>
+            <th>Utilisateur</th>
+            <th class="text-right">Cœurs</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of states.rows(); track row.rank) {
+            <tr [class.bg-primary]="row.isMe" [class.bg-opacity-10]="row.isMe">
+              <td class="font-semibold tabular-nums">
+                {{ medal(row.rank) }} {{ row.rank }}
+              </td>
+              <td>
+                <div class="flex items-center gap-2.5">
+                  <span
+                    class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-base-300 text-xs font-semibold text-base-content/70">
+                    {{ initials(row.name) }}
+                  </span>
+                  <span class="font-medium">
+                    {{ row.name || 'Anonyme' }}
+                    @if (row.isMe) {
+                      <span class="badge badge-primary badge-xs ml-1">moi</span>
+                    }
+                  </span>
+                </div>
+              </td>
+              <td class="text-right tabular-nums font-medium">
+                <span class="inline-flex items-center gap-1 justify-end">
+                  {{ row.hearts }}
+                  <span class="icon-[fluent--heart-24-filled] text-error"></span>
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-center gap-3">
+      <button class="btn btn-ghost btn-sm" [disabled]="load.page() <= 1 || load.isLoading()" (click)="prev()">
+        <span class="icon-[fluent--chevron-left-24-regular]"></span>
+        Précédent
+      </button>
+      <span class="text-sm text-base-content/60">Page {{ load.page() }}</span>
+      <button class="btn btn-ghost btn-sm" [disabled]="load.isLoading()" (click)="next()">
+        Suivant
+        <span class="icon-[fluent--chevron-right-24-regular]"></span>
+      </button>
+    </div>
+  }
+</div>

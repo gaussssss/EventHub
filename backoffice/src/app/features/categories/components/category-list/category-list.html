@@ -1,0 +1,80 @@
+<div class="flex flex-col gap-5">
+  <!-- En-tête -->
+  <div class="flex items-center justify-between gap-4 flex-wrap">
+    <div>
+      <h1 class="text-2xl font-semibold">Catégories</h1>
+      <p class="text-sm text-base-content/60 mt-0.5">
+        Gérez les catégories d'activités (slug, libellé, couleur, icône).
+      </p>
+    </div>
+    <button class="btn btn-primary btn-sm gap-1" (click)="openCreate()">
+      <span class="icon-[fluent--add-24-regular]"></span>
+      Nouvelle catégorie
+    </button>
+  </div>
+
+  <!-- Chargement -->
+  @if (load.isLoading()) {
+    <div class="flex justify-center py-16">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  }
+
+  <!-- Vide -->
+  @if (!load.isLoading() && states.categories().length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 gap-2 text-base-content/40">
+      <span class="icon-[fluent--tag-24-regular] text-5xl"></span>
+      <p>Aucune catégorie.</p>
+      <button class="btn btn-primary btn-sm" (click)="openCreate()">Créer la première</button>
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!load.isLoading() && states.categories().length > 0) {
+    <div class="overflow-x-auto bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)]">
+      <table class="table table-sm">
+        <thead>
+          <tr class="text-base-content/60">
+            <th>Catégorie</th>
+            <th>Slug</th>
+            <th>Icône</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (category of states.categories(); track category.id) {
+            <tr class="hover:bg-base-200/60" [class.opacity-50]="del.deletingId() === category.id">
+              <td>
+                <div class="flex items-center gap-2.5">
+                  <span
+                    class="inline-block w-3.5 h-3.5 rounded-full border border-base-300 shrink-0"
+                    [style.background]="category.color || '#c8c6c4'"></span>
+                  <span class="font-medium">{{ category.label }}</span>
+                </div>
+              </td>
+              <td class="font-mono text-xs text-base-content/60">{{ category.slug }}</td>
+              <td class="text-base-content/60">{{ category.icon || '—' }}</td>
+              <td class="text-right">
+                <div class="flex justify-end gap-1">
+                  <button class="btn btn-ghost btn-xs gap-1" (click)="openEdit(category)">
+                    <span class="icon-[fluent--edit-24-regular]"></span>
+                    Éditer
+                  </button>
+                  <button
+                    class="btn btn-ghost btn-xs text-error gap-1"
+                    [disabled]="del.deletingId() === category.id"
+                    (click)="confirmDelete(category)">
+                    <span class="icon-[fluent--delete-24-regular]"></span>
+                    Supprimer
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-category-form />

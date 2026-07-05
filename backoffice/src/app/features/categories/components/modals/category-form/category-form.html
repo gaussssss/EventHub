@@ -1,0 +1,67 @@
+@if (modals.isOpen('category-form')) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
+    <div class="w-full max-w-md bg-base-100 rounded-[var(--az-radius-lg)] border border-base-300 p-6">
+      <h2 class="text-lg font-semibold mb-4">
+        {{ isEdit() ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}
+      </h2>
+
+      <label class="block text-sm font-medium mb-1">Slug</label>
+      <input
+        type="text"
+        class="input input-bordered w-full mb-3"
+        placeholder="ex. sport"
+        [ngModel]="slug()"
+        (ngModelChange)="slug.set($event)" />
+
+      <label class="block text-sm font-medium mb-1">Libellé</label>
+      <input
+        type="text"
+        class="input input-bordered w-full mb-3"
+        placeholder="ex. Sport & plein air"
+        [ngModel]="label()"
+        (ngModelChange)="label.set($event)" />
+
+      <div class="flex gap-3 mb-5">
+        <div class="flex-1">
+          <label class="block text-sm font-medium mb-1">Couleur</label>
+          <div class="flex items-center gap-2">
+            <input
+              type="color"
+              class="w-10 h-10 rounded-[var(--az-radius)] border border-base-300 bg-base-100 p-0.5"
+              [ngModel]="color()"
+              (ngModelChange)="color.set($event)" />
+            <input
+              type="text"
+              class="input input-bordered input-sm flex-1"
+              placeholder="#0078d4"
+              [ngModel]="color()"
+              (ngModelChange)="color.set($event)" />
+          </div>
+        </div>
+        <div class="flex-1">
+          <label class="block text-sm font-medium mb-1">Icône (optionnel)</label>
+          <input
+            type="text"
+            class="input input-bordered w-full"
+            placeholder="ex. sport"
+            [ngModel]="icon()"
+            (ngModelChange)="icon.set($event)" />
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button type="button" class="btn btn-ghost btn-sm" (click)="close()">Annuler</button>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          [disabled]="save.isSaving()"
+          (click)="submit()">
+          @if (save.isSaving()) {
+            <span class="loading loading-spinner loading-xs"></span>
+          }
+          {{ isEdit() ? 'Enregistrer' : 'Créer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

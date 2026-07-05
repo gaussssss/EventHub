@@ -1,0 +1,114 @@
+<div class="flex flex-col gap-5">
+  <!-- En-tête + retour -->
+  <div class="flex items-center justify-between gap-4 flex-wrap">
+    <div>
+      <a routerLink="/activities" class="text-sm text-primary hover:underline inline-flex items-center gap-1">
+        <span class="icon-[fluent--chevron-left-24-regular]"></span>
+        Activités
+      </a>
+      <h1 class="text-2xl font-semibold mt-1">Inscrits &amp; présence</h1>
+      <p class="text-sm text-base-content/60 mt-0.5">
+        Cochez les présents puis validez — les cœurs sont crédités à la présence.
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="btn btn-ghost btn-sm" (click)="selectAll()">Tout sélectionner</button>
+      <button
+        class="btn btn-primary btn-sm gap-1"
+        [disabled]="mark.isSaving() || selected().size === 0"
+        (click)="markPresent()">
+        @if (mark.isSaving()) {
+          <span class="loading loading-spinner loading-xs"></span>
+        } @else {
+          <span class="icon-[fluent--checkmark-24-regular]"></span>
+        }
+        Marquer présents ({{ selected().size }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Bandeau de statistiques -->
+  @if (stats.dashboard(); as d) {
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div class="bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)] p-3">
+        <div class="text-xl font-semibold tabular-nums">{{ pct(d.fillRate) }}</div>
+        <div class="text-xs text-base-content/60">Remplissage</div>
+        <div class="text-[11px] text-base-content/40">{{ d.registered + d.attended }}/{{ d.maxParticipants }} places</div>
+      </div>
+      <div class="bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)] p-3">
+        <div class="text-xl font-semibold tabular-nums text-success">{{ d.attended }}</div>
+        <div class="text-xs text-base-content/60">Présents</div>
+        <div class="text-[11px] text-base-content/40">{{ pct(d.attendanceRate) }} de présence</div>
+      </div>
+      <div class="bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)] p-3">
+        <div class="text-xl font-semibold tabular-nums text-error">{{ d.noShow }}</div>
+        <div class="text-xs text-base-content/60">No-show</div>
+        <div class="text-[11px] text-base-content/40">{{ pct(d.noShowRate) }} des issues</div>
+      </div>
+      <div class="bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)] p-3">
+        <div class="text-xl font-semibold tabular-nums text-warning">{{ d.waitlisted }}</div>
+        <div class="text-xs text-base-content/60">Liste d'attente</div>
+      </div>
+      <div class="bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)] p-3">
+        <div class="text-xl font-semibold tabular-nums">{{ d.registered }}</div>
+        <div class="text-xs text-base-content/60">Inscrits (à venir)</div>
+      </div>
+    </div>
+  }
+
+  <!-- Chargement -->
+  @if (load.isLoading()) {
+    <div class="flex justify-center py-16">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  }
+
+  <!-- Vide -->
+  @if (!load.isLoading() && states.rows().length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 gap-2 text-base-content/40">
+      <span class="icon-[fluent--people-24-regular] text-5xl"></span>
+      <p>Aucun inscrit.</p>
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!load.isLoading() && states.rows().length > 0) {
+    <div class="overflow-x-auto bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)]">
+      <table class="table table-sm">
+        <thead>
+          <tr class="text-base-content/60">
+            <th class="w-10"></th>
+            <th>Inscrit</th>
+            <th>Statut</th>
+            <th>Inscrit le</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of states.rows(); track row.userId) {
+            <tr class="hover:bg-base-200/60">
+              <td>
+                <input
+                  type="checkbox"
+                  class="checkbox checkbox-sm"
+                  [checked]="isSelected(row.userId)"
+                  (change)="toggle(row.userId)" />
+              </td>
+              <td>
+                <div class="font-medium">{{ row.name || '—' }}</div>
+                <div class="text-xs text-base-content/50">{{ row.email }}</div>
+              </td>
+              <td>
+                <span class="badge badge-sm {{ statusBadge(row.status) }}">
+                  {{ statusLabel(row.status) }}
+                </span>
+              </td>
+              <td class="whitespace-nowrap text-base-content/70">
+                {{ row.registeredAt | date: 'dd/MM/yyyy HH:mm' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

@@ -1,0 +1,43 @@
+<div class="min-h-screen flex flex-col bg-base-200">
+  <app-navbar />
+
+  <div class="flex flex-1 min-h-0">
+    <!-- Rail de navigation gauche -->
+    @if (ui.sidebarOpen()) {
+      <aside class="w-56 shrink-0 bg-base-100 border-r border-base-300">
+        <nav class="p-3 flex flex-col gap-0.5">
+          <p class="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wide text-base-content/40">
+            Sections
+          </p>
+          @for (item of nav; track item.path) {
+            @if (item.enabled) {
+              <a
+                [routerLink]="item.path"
+                routerLinkActive="bg-primary/10 text-primary font-semibold"
+                class="flex items-center gap-3 px-3 py-2 rounded-[var(--az-radius)] text-sm text-base-content/80 hover:bg-base-200 transition-colors">
+                <span class="{{ item.icon }} text-lg"></span>
+                {{ item.label }}
+              </a>
+            } @else {
+              <span
+                class="flex items-center gap-3 px-3 py-2 rounded-[var(--az-radius)] text-sm text-base-content/35 cursor-not-allowed"
+                title="Bientôt">
+                <span class="{{ item.icon }} text-lg"></span>
+                {{ item.label }}
+              </span>
+            }
+          }
+        </nav>
+      </aside>
+    }
+
+    <!-- Contenu -->
+    <main class="flex-1 min-w-0 overflow-auto p-4 sm:p-6">
+      <div class="mx-auto max-w-6xl">
+        <router-outlet />
+      </div>
+    </main>
+  </div>
+
+  <app-toast-list />
+</div>

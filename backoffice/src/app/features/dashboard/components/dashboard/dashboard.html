@@ -1,0 +1,72 @@
+<div class="flex flex-col gap-5">
+  <!-- En-tête -->
+  <div class="flex items-center justify-between gap-4 flex-wrap">
+    <div>
+      <h1 class="text-2xl font-semibold">Tableau de bord</h1>
+      <p class="text-sm text-base-content/60 mt-0.5">Vue d'ensemble de la plateforme.</p>
+    </div>
+    <div class="flex items-center gap-2 flex-wrap">
+      @if (isDev) {
+        <button
+          class="btn btn-sm gap-1 border-warning text-warning btn-outline"
+          [disabled]="seed.isSeeding()"
+          title="Réinitialise et régénère des données de démo (dev uniquement)"
+          (click)="runSeed()">
+          @if (seed.isSeeding()) {
+            <span class="loading loading-spinner loading-xs"></span>
+          } @else {
+            <span class="icon-[fluent--beaker-24-regular]"></span>
+          }
+          Seed dev data
+        </button>
+      }
+      <button
+        class="btn btn-outline btn-sm gap-1"
+        [disabled]="export.isExporting()"
+        (click)="export.handler()">
+        @if (export.isExporting()) {
+          <span class="loading loading-spinner loading-xs"></span>
+        } @else {
+          <span class="icon-[fluent--arrow-download-24-regular]"></span>
+        }
+        Exporter les inscriptions (CSV)
+      </button>
+    </div>
+  </div>
+
+  <!-- Chargement -->
+  @if (load.isLoading()) {
+    <div class="flex justify-center py-16">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  }
+
+  <!-- Erreur / vide -->
+  @if (!load.isLoading() && !states.overview()) {
+    <div class="flex flex-col items-center justify-center py-20 gap-3 text-base-content/40">
+      <span class="icon-[fluent--board-24-regular] text-5xl"></span>
+      <p>Aucune donnée à afficher.</p>
+      <button class="btn btn-primary btn-sm" (click)="load.handler()">Réessayer</button>
+    </div>
+  }
+
+  <!-- Grille des KPIs -->
+  @if (!load.isLoading() && states.overview()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (card of cards(); track card.label) {
+        <div
+          class="bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)] p-5 flex items-start gap-4 hover:border-primary/40 transition-colors">
+          <span
+            class="{{ card.icon }} {{ card.accent ?? 'text-primary' }} text-3xl shrink-0 mt-0.5"></span>
+          <div class="min-w-0">
+            <div class="text-3xl font-semibold tabular-nums">{{ card.value }}</div>
+            <div class="text-sm text-base-content/70">{{ card.label }}</div>
+            @if (card.hint) {
+              <div class="text-xs text-base-content/45 mt-1">{{ card.hint }}</div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

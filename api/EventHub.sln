@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5BEED8AE-85C6-40DD-9F76-FDEB1ED3CAEC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventHub.Domain", "src\EventHub.Domain\EventHub.Domain.csproj", "{F59836EE-F2FD-4745-9F48-70CD61AB8190}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventHub.Application", "src\EventHub.Application\EventHub.Application.csproj", "{B3AE9CB4-C861-4A70-A339-B711C131AD94}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventHub.Infrastructure", "src\EventHub.Infrastructure\EventHub.Infrastructure.csproj", "{7A7E5C74-F615-48CA-B304-CA32B4138E44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventHub.Api", "src\EventHub.Api\EventHub.Api.csproj", "{7327A34C-0108-46DE-83F3-AEB13A54F066}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{486E15A0-100A-44BD-BBF9-04DB22519DBD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventHub.UnitTests", "tests\EventHub.UnitTests\EventHub.UnitTests.csproj", "{C4869368-EEDC-4D92-ABC6-8A3C2B5E7C9F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventHub.IntegrationTests", "tests\EventHub.IntegrationTests\EventHub.IntegrationTests.csproj", "{3007DD8B-EE0F-4B6C-9F66-09F6E6A1581F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F59836EE-F2FD-4745-9F48-70CD61AB8190}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F59836EE-F2FD-4745-9F48-70CD61AB8190}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F59836EE-F2FD-4745-9F48-70CD61AB8190}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F59836EE-F2FD-4745-9F48-70CD61AB8190}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3AE9CB4-C861-4A70-A339-B711C131AD94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3AE9CB4-C861-4A70-A339-B711C131AD94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3AE9CB4-C861-4A70-A339-B711C131AD94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3AE9CB4-C861-4A70-A339-B711C131AD94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A7E5C74-F615-48CA-B304-CA32B4138E44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A7E5C74-F615-48CA-B304-CA32B4138E44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A7E5C74-F615-48CA-B304-CA32B4138E44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A7E5C74-F615-48CA-B304-CA32B4138E44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7327A34C-0108-46DE-83F3-AEB13A54F066}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7327A34C-0108-46DE-83F3-AEB13A54F066}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7327A34C-0108-46DE-83F3-AEB13A54F066}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7327A34C-0108-46DE-83F3-AEB13A54F066}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4869368-EEDC-4D92-ABC6-8A3C2B5E7C9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4869368-EEDC-4D92-ABC6-8A3C2B5E7C9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4869368-EEDC-4D92-ABC6-8A3C2B5E7C9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4869368-EEDC-4D92-ABC6-8A3C2B5E7C9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3007DD8B-EE0F-4B6C-9F66-09F6E6A1581F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3007DD8B-EE0F-4B6C-9F66-09F6E6A1581F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3007DD8B-EE0F-4B6C-9F66-09F6E6A1581F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3007DD8B-EE0F-4B6C-9F66-09F6E6A1581F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F59836EE-F2FD-4745-9F48-70CD61AB8190} = {5BEED8AE-85C6-40DD-9F76-FDEB1ED3CAEC}
+		{B3AE9CB4-C861-4A70-A339-B711C131AD94} = {5BEED8AE-85C6-40DD-9F76-FDEB1ED3CAEC}
+		{7A7E5C74-F615-48CA-B304-CA32B4138E44} = {5BEED8AE-85C6-40DD-9F76-FDEB1ED3CAEC}
+		{7327A34C-0108-46DE-83F3-AEB13A54F066} = {5BEED8AE-85C6-40DD-9F76-FDEB1ED3CAEC}
+		{C4869368-EEDC-4D92-ABC6-8A3C2B5E7C9F} = {486E15A0-100A-44BD-BBF9-04DB22519DBD}
+		{3007DD8B-EE0F-4B6C-9F66-09F6E6A1581F} = {486E15A0-100A-44BD-BBF9-04DB22519DBD}
+	EndGlobalSection
+EndGlobal

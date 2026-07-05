@@ -1,0 +1,51 @@
+# ---- Config Claude Code (NE JAMAIS versionner) ----
+.claude/
+
+# ---- OS / éditeurs ----
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vs/
+*.user
+
+# ---- Secrets / config locale (NE JAMAIS versionner) ----
+# L'environnement de dev du back-office contient les identifiants Entra locaux.
+backoffice/src/environments/environment.development.ts
+# Fichiers d'env génériques éventuels
+**/.env
+**/.env.local
+*.local.json
+
+# ---- .NET (API) ----
+[Bb]in/
+[Oo]bj/
+# Base SQLite de dev + journaux WAL
+*.db
+*.db-shm
+*.db-wal
+
+# ---- Angular (back-office) ----
+backoffice/node_modules/
+backoffice/dist/
+backoffice/.angular/
+backoffice/out-tsc/
+backoffice/coverage/
+
+# ---- Flutter (mobile) ----
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+mobile/pubspec.lock
+mobile/ios/Pods/
+mobile/ios/Flutter/Flutter.framework
+mobile/ios/Flutter/ephemeral/
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/**/GeneratedPluginRegistrant.*
+*.iml
+
+# ---- Divers ----
+*.log

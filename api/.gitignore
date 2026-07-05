@@ -1,0 +1,14 @@
+# .NET build artifacts
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+
+# SQLite databases (générées localement)
+*.db
+*.db-shm
+*.db-wal
+
+# User-specific
+*.user
+.vs/

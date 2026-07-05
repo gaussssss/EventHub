@@ -1,0 +1,5 @@
+<div class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-80 max-w-[calc(100vw-2rem)]">
+  @for (toast of toasts.messages(); track toast.id) {
+    <app-toast [toast]="toast" (closed)="toasts.removeToast($event)" />
+  }
+</div>
