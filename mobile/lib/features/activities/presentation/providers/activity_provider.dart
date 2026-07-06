@@ -75,6 +75,9 @@ class ActivityFilterNotifier extends Notifier<ActivityFilter> {
   void setIncludePast(bool value) =>
       state = state.copyWith(includePast: value);
 
+  void setRegisteredOnly(bool value) =>
+      state = state.copyWith(registeredOnly: value);
+
   void reset() => state = const ActivityFilter();
 }
 
@@ -120,12 +123,33 @@ final filteredActivitiesProvider = FutureProvider<List<Activity>>((ref) {
     from = DateTime(now.year, now.month, now.day); // début du jour courant
   }
 
-  return ref.watch(activityRepositoryProvider).getActivities(
+  return _loadFiltered(ref, filter, from, to);
+});
+
+/// Charge le catalogue filtré (backend) puis applique le filtre client
+/// « inscrits seulement » si demandé (intersection avec mes inscriptions).
+Future<List<Activity>> _loadFiltered(
+    Ref ref, ActivityFilter filter, DateTime? from, DateTime? to) async {
+  final list = await ref.watch(activityRepositoryProvider).getActivities(
         categorySlug: filter.categorySlug,
         availableOnly: filter.availableOnly,
         from: from,
         to: to,
       );
+  if (!filter.registeredOnly) return list;
+  final registered = await ref.watch(myRegistrationsProvider.future);
+  final ids = registered.map((a) => a.id).toSet();
+  return list.where((a) => ids.contains(a.id)).toList();
+}
+
+/// Activités à venir (à partir d'aujourd'hui), **indépendantes du filtre** —
+/// utilisées par la section « Activités à venir » de l'accueil, qui ne doit pas
+/// refléter les filtres du catalogue.
+final upcomingActivitiesProvider = FutureProvider<List<Activity>>((ref) {
+  final now = DateTime.now();
+  return ref
+      .watch(activityRepositoryProvider)
+      .getActivities(from: DateTime(now.year, now.month, now.day));
 });
 
 /// Activités « à la une » : celles explicitement marquées `IsFeatured` ; si

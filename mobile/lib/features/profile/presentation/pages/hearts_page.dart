@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/platform_icons.dart';
 import '../../../../core/widgets/async_value_widget.dart';
 import '../../domain/entities/leaderboard_entry.dart';
 import '../../domain/entities/user_profile.dart';
@@ -22,7 +23,7 @@ class HeartsPage extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.surface,
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left),
+          icon: Icon(PlatformIcons.back),
           onPressed: () => context.pop(),
         ),
         title: const Text('Cœurs santé'),

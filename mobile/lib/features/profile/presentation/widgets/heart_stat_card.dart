@@ -90,7 +90,7 @@ class HeartStatCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                const Icon(Iconsax.heart_copy, color: Colors.white, size: 28),
+                const Icon(Iconsax.heart_copy, color: Colors.white, size: 34),
                 const SizedBox(width: 8),
                 Text(
                   '$userHearts',
@@ -124,17 +124,9 @@ class HeartStatCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '$userHearts / $nextThreshold pour niveau suivant',
-                  style: const TextStyle(
-                      color: Colors.white70, fontSize: 12),
-                ),
-                const Icon(Iconsax.arrow_right_3,
-                    color: Colors.white70, size: 12),
-              ],
+            Text(
+              '$userHearts / $nextThreshold pour niveau suivant',
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
             const SizedBox(height: 16),
             const Divider(

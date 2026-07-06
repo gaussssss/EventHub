@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +14,14 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/user_profile.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/heart_stat_card.dart';
+
+/// Fournisseur d'image d'avatar : `FileImage` pour un chemin local (photo
+/// fraîchement choisie/prise), `NetworkImage` pour une URL distante.
+ImageProvider _avatarProvider(String pathOrUrl) {
+  return pathOrUrl.startsWith('http')
+      ? NetworkImage(pathOrUrl)
+      : FileImage(File(pathOrUrl));
+}
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -69,7 +79,7 @@ class ProfilePage extends ConsumerWidget {
                           radius: 38,
                           backgroundColor: AppColors.divider,
                           backgroundImage: customAvatar != null
-                              ? NetworkImage(customAvatar)
+                              ? _avatarProvider(customAvatar)
                               : CachedNetworkImageProvider(user.avatarUrl)
                                   as ImageProvider,
                         ),
@@ -305,7 +315,7 @@ class ProfilePage extends ConsumerWidget {
       context: context,
       backgroundColor: Colors.transparent,
       useRootNavigator: true,
-      builder: (_) => Container(
+      builder: (sheetContext) => Container(
         decoration: const BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -335,13 +345,15 @@ class ProfilePage extends ConsumerWidget {
             _PhotoSourceTile(
               icon: Iconsax.camera,
               label: 'Prendre une photo',
-              onTap: () => Navigator.pop(context, ImageSource.camera),
+              onTap: () =>
+                  Navigator.of(sheetContext).pop(ImageSource.camera),
             ),
             const SizedBox(height: 12),
             _PhotoSourceTile(
               icon: Iconsax.gallery,
               label: 'Choisir depuis la galerie',
-              onTap: () => Navigator.pop(context, ImageSource.gallery),
+              onTap: () =>
+                  Navigator.of(sheetContext).pop(ImageSource.gallery),
             ),
           ],
         ),
@@ -369,7 +381,7 @@ class ProfilePage extends ConsumerWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       useRootNavigator: true,
-      builder: (_) => Container(
+      builder: (sheetContext) => Container(
         decoration: const BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -378,7 +390,7 @@ class ProfilePage extends ConsumerWidget {
           24,
           20,
           24,
-          MediaQuery.of(context).viewInsets.bottom + 24,
+          MediaQuery.of(sheetContext).viewInsets.bottom + 24,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -416,7 +428,7 @@ class ProfilePage extends ConsumerWidget {
               width: double.infinity,
               height: 54,
               child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.of(sheetContext).pop(),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,

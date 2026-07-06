@@ -14,7 +14,27 @@ class MainScaffold extends StatelessWidget {
     return Scaffold(
       // Le contenu passe sous la barre flottante pour l'effet « verre dépoli ».
       extendBody: true,
-      body: shell,
+      // Transition douce (fondu + léger glissement) au changement d'onglet,
+      // plutôt qu'un remplacement sec. La clé = index de branche déclenche l'anim.
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.015),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        ),
+        child: KeyedSubtree(
+          key: ValueKey<int>(shell.currentIndex),
+          child: shell,
+        ),
+      ),
       bottomNavigationBar: _FloatingNavBar(shell: shell),
     );
   }
@@ -40,8 +60,8 @@ class _FloatingNavBar extends StatelessWidget {
                 color: AppColors.surface.withValues(alpha: 0.82),
                 borderRadius: BorderRadius.circular(26),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  width: 0.5,
+                  color: Colors.black.withValues(alpha: 0.08),
+                  width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -127,10 +147,16 @@ class _NavItem extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    isActive ? activeIcon : icon,
-                    color: isActive ? AppColors.primary : AppColors.textLight,
-                    size: 24,
+                  AnimatedScale(
+                    scale: isActive ? 1.15 : 1.0,
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutBack,
+                    child: Icon(
+                      isActive ? activeIcon : icon,
+                      color:
+                          isActive ? AppColors.primary : AppColors.textLight,
+                      size: 24,
+                    ),
                   ),
                   // Le libellé n'apparaît que sur l'onglet actif (style Apple Music).
                   if (isActive) ...[

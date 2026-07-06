@@ -1,11 +1,15 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/utils/platform_icons.dart';
 import '../../../../core/widgets/async_value_widget.dart';
 import '../../domain/entities/activity.dart';
 import '../providers/activity_provider.dart';
@@ -57,7 +61,7 @@ class ActivityDetailPage extends ConsumerWidget {
               child: CircleAvatar(
                 backgroundColor: Colors.black.withValues(alpha: 0.45),
                 child: IconButton(
-                  icon: const Icon(Iconsax.arrow_left,
+                  icon: Icon(PlatformIcons.back,
                       color: Colors.white, size: 20),
                   onPressed: () => context.pop(),
                 ),
@@ -69,7 +73,7 @@ class ActivityDetailPage extends ConsumerWidget {
                 child: CircleAvatar(
                   backgroundColor: Colors.black.withValues(alpha: 0.45),
                   child: IconButton(
-                    icon: const Icon(Iconsax.share,
+                    icon: Icon(PlatformIcons.share,
                         color: Colors.white, size: 18),
                     onPressed: () => _shareActivity(activity),
                   ),
@@ -327,13 +331,28 @@ class ActivityDetailPage extends ConsumerWidget {
     }
   }
 
-  void _shareActivity(Activity activity) {
-    SharePlus.instance.share(ShareParams(
-      text: '🎉 ${activity.title}\n'
-          '📅 ${DateFormatter.dateFull(activity.date)} à ${DateFormatter.time(activity.date)}\n'
-          '📍 ${activity.location}\n\n'
-          'Découvre cet événement sur EventHub UQTR !',
+  Future<void> _shareActivity(Activity activity) async {
+    final text = '🎉 ${activity.title}\n'
+        '📅 ${DateFormatter.dateFull(activity.date)} à ${DateFormatter.time(activity.date)}\n'
+        '📍 ${activity.location}\n\n'
+        'Découvre cet événement sur EventHub UQTR !';
+
+    // Joint le logo EventHub pour que l'aperçu de la feuille de partage soit
+    // marqué (iOS n'affiche pas d'icône d'app pour un partage texte seul).
+    XFile? logo;
+    try {
+      final bytes = await rootBundle.load('assets/icon/app_icon.png');
+      final file = File('${Directory.systemTemp.path}/eventhub_logo.png');
+      await file.writeAsBytes(bytes.buffer.asUint8List(), flush: true);
+      logo = XFile(file.path, mimeType: 'image/png');
+    } catch (_) {
+      logo = null; // en cas d'échec, on partage le texte seul
+    }
+
+    await SharePlus.instance.share(ShareParams(
+      text: text,
       subject: activity.title,
+      files: logo == null ? null : [logo],
     ));
   }
 }

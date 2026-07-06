@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/platform_icons.dart';
 import '../providers/activity_provider.dart';
 
 class RegistrationWebViewPage extends ConsumerStatefulWidget {
@@ -68,8 +69,7 @@ class _RegistrationWebViewPageState
         backgroundColor: AppColors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left,
-              color: AppColors.textDark),
+          icon: Icon(PlatformIcons.back, color: AppColors.textDark),
           onPressed: () => context.pop(),
         ),
         title: const Text(

@@ -183,6 +183,21 @@ class _ActivityFilterSheetState extends ConsumerState<ActivityFilterSheet> {
               ),
             ],
           ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Mes inscriptions seulement',
+                style: TextStyle(fontSize: 15, color: AppColors.textDark),
+              ),
+              Switch.adaptive(
+                value: filter.registeredOnly,
+                onChanged: notifier.setRegisteredOnly,
+                activeThumbColor: Colors.white,
+                activeTrackColor: AppColors.primary,
+              ),
+            ],
+          ),
           const SizedBox(height: 24),
           Row(
             children: [

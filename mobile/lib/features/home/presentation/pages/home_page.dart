@@ -22,9 +22,10 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Tableau de bord : chaque section s'affiche dès que sa donnée arrive
-    // (fallback liste vide / profil null pendant le chargement).
-    final activities =
-        ref.watch(filteredActivitiesProvider).valueOrNull ?? const [];
+    // (fallback liste vide / profil null pendant le chargement). La liste
+    // « à venir » ignore volontairement les filtres du catalogue.
+    final upcoming =
+        ref.watch(upcomingActivitiesProvider).valueOrNull ?? const [];
     final posts = ref.watch(allPostsProvider).valueOrNull ?? const [];
     final user = ref.watch(currentUserProvider).valueOrNull;
     final totalUsers = ref.watch(totalAppUsersProvider);
@@ -34,17 +35,21 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      // bottom:false → le fil passe sous la barre flottante (effet verre dépoli),
+      // comme au catalogue. Le dernier sliver garde un padding bas suffisant.
       body: SafeArea(
+        bottom: false,
         child: RefreshIndicator(
           color: AppColors.primary,
           onRefresh: () async {
             ref.invalidate(allActivitiesProvider);
-            ref.invalidate(filteredActivitiesProvider);
+            ref.invalidate(upcomingActivitiesProvider);
             ref.invalidate(featuredActivitiesProvider);
             ref.invalidate(allPostsProvider);
             ref.invalidate(communityStatsProvider);
             ref.invalidate(currentUserProvider);
             await Future.wait([
+              ref.read(upcomingActivitiesProvider.future),
               ref.read(featuredActivitiesProvider.future),
               ref.read(allPostsProvider.future),
             ]);
@@ -182,10 +187,10 @@ class HomePage extends ConsumerWidget {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: activities.length.clamp(0, 8),
+                  itemCount: upcoming.length.clamp(0, 8),
                   separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {
-                    final activity = activities[index];
+                    final activity = upcoming[index];
                     return _MiniActivityCard(
                       activity: activity,
                       onTap: () =>

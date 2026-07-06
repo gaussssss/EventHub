@@ -6,6 +6,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/error/failure.dart';
+import '../../../../core/utils/platform_icons.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/async_value_widget.dart';
 import '../../domain/entities/post.dart';
@@ -93,7 +94,7 @@ class _PostDetailPageState extends ConsumerState<PostDetailPage> {
             backgroundColor: AppColors.surface,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Iconsax.arrow_left),
+              icon: Icon(PlatformIcons.back),
               onPressed: () => context.pop(),
             ),
             title: Column(
