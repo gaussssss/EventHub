@@ -4,6 +4,9 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<!-- image_picker : accès à la galerie pour publier une photo. -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>EventHub a besoin d'accéder à vos photos pour publier une image dans le fil communautaire.</string>
 	<!-- DEV uniquement : autorise le HTTP en clair vers l'API locale (localhost).
 	     ATS bloque le cleartext par défaut. En prod l'API est en HTTPS → inutile. -->
 	<key>NSAppTransportSecurity</key>

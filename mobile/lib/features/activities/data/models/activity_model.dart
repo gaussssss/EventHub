@@ -5,7 +5,8 @@ class ActivityModel extends Activity {
     required super.id,
     required super.title,
     required super.description,
-    required super.category,
+    required super.categorySlug,
+    required super.categoryLabel,
     required super.date,
     required super.location,
     required super.organizer,
@@ -24,7 +25,8 @@ class ActivityModel extends Activity {
       id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
-      category: _categoryFromSlug(json['category'] as String?),
+      categorySlug: (json['category'] ?? '') as String,
+      categoryLabel: _labelFromSlug(json['category'] as String?),
       date: DateTime.parse(json['startsAt'] as String).toLocal(),
       location: json['location'] as String,
       organizer: (json['organizer'] ?? '') as String,
@@ -43,7 +45,7 @@ class ActivityModel extends Activity {
         'id': id,
         'title': title,
         'description': description,
-        'category': category.name,
+        'category': categorySlug,
         'startsAt': date.toUtc().toIso8601String(),
         'location': location,
         'organizer': organizer,
@@ -56,13 +58,15 @@ class ActivityModel extends Activity {
             registrationDeadline?.toUtc().toIso8601String(),
       };
 
-  static ActivityCategory _categoryFromSlug(String? slug) {
-    switch (slug) {
-      case 'sport':
-        return ActivityCategory.sport;
-      case 'socioculturel':
-      default:
-        return ActivityCategory.socioculturel;
-    }
+  /// Libellé lisible dérivé du slug (repli quand l'API n'en fournit pas) :
+  /// « seed-culture » → « Culture », « sport » → « Sport ».
+  static String _labelFromSlug(String? slug) {
+    if (slug == null || slug.isEmpty) return 'Autre';
+    final cleaned = slug.startsWith('seed-') ? slug.substring(5) : slug;
+    return cleaned
+        .split('-')
+        .where((w) => w.isNotEmpty)
+        .map((w) => w[0].toUpperCase() + w.substring(1))
+        .join(' ');
   }
 }

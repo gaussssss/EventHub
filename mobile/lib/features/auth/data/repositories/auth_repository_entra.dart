@@ -100,12 +100,69 @@ class AuthRepositoryEntra implements AuthRepository {
 
   @override
   Future<User?> restoreSession() async {
-    // Un access token stocké = session ouverte. (Le rafraîchissement silencieux
-    // via le refresh token pourra être branché ici avant l'expiration.)
     final accessToken = await _tokens.readAccessToken();
     if (accessToken == null || accessToken.isEmpty) return null;
+
+    // Jeton expiré ? On tente d'abord un rafraîchissement silencieux (refresh
+    // token stocké). S'il aboutit, la session continue sans reconnexion ; sinon
+    // on purge et l'utilisateur repart sur l'écran de connexion.
+    if (_isExpired(accessToken)) {
+      final refreshed = await refreshAccessToken();
+      if (refreshed != null) {
+        return _userFromClaims(refreshed) ??
+            const User(id: '', name: '', email: '');
+      }
+      debugPrint('[Entra] token expiré + refresh impossible → session purgée.');
+      await _tokens.clear();
+      return null;
+    }
+
     return _userFromClaims(accessToken) ??
         const User(id: '', name: '', email: '');
+  }
+
+  @override
+  Future<String?> refreshAccessToken() async {
+    final refresh = await _tokens.readRefreshToken();
+    if (refresh == null || refresh.isEmpty) return null;
+    try {
+      final result = await _appAuth
+          .token(
+            TokenRequest(
+              AppConfig.entraClientId,
+              AppConfig.entraRedirectUri,
+              serviceConfiguration: _serviceConfiguration,
+              refreshToken: refresh,
+              scopes: AppConfig.entraOAuthScopes,
+            ),
+          )
+          .timeout(const Duration(seconds: 30));
+
+      final accessToken = result.accessToken;
+      if (accessToken == null || accessToken.isEmpty) return null;
+      // Azure fait tourner le refresh token → on persiste le nouveau (repli sur
+      // l'ancien si l'échange n'en renvoie pas).
+      await _tokens.save(
+          access: accessToken, refresh: result.refreshToken ?? refresh);
+      debugPrint('[Entra] ✓ token rafraîchi silencieusement '
+          '(len=${accessToken.length})');
+      return accessToken;
+    } catch (e) {
+      debugPrint('[Entra] échec du refresh silencieux : $e');
+      return null;
+    }
+  }
+
+  /// Vrai si le JWT porte un `exp` déjà dépassé (marge de 30 s pour la dérive
+  /// d'horloge). Sans claim `exp` lisible, on considère le jeton valide.
+  bool _isExpired(String jwt) {
+    final claims = _decodeJwtPayload(jwt);
+    final exp = claims?['exp'];
+    if (exp is! int) return false;
+    final expiry = DateTime.fromMillisecondsSinceEpoch(exp * 1000, isUtc: true);
+    return DateTime.now().toUtc().isAfter(
+          expiry.subtract(const Duration(seconds: 30)),
+        );
   }
 
   @override

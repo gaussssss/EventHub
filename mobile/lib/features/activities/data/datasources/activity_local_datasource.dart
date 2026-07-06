@@ -10,7 +10,8 @@ class ActivityLocalDataSource {
       title: 'Course en forêt',
       description:
           'Rejoignez-nous pour une course matinale dans les sentiers autour du campus. Parfait pour tous les niveaux, du débutant au coureur confirmé. Eau fournie au départ.',
-      category: ActivityCategory.sport,
+      categorySlug: 'sport',
+      categoryLabel: 'Sport',
       date: DateTime(2026, 7, 6, 8, 0),
       registrationDeadline: DateTime(2026, 7, 4, 23, 59),
       location: 'Parc portuaire, Trois-Rivières',
@@ -27,7 +28,8 @@ class ActivityLocalDataSource {
       title: 'Yoga matinal',
       description:
           'Commencez votre journée en douceur avec une session de yoga guidée. Réduisez le stress et améliorez votre flexibilité. Tapis fournis ou apportez le vôtre.',
-      category: ActivityCategory.sport,
+      categorySlug: 'sport',
+      categoryLabel: 'Sport',
       date: DateTime(2026, 7, 7, 7, 30),
       registrationDeadline: DateTime(2026, 7, 5, 23, 59),
       location: 'Gymnase principal UQTR',
@@ -44,7 +46,8 @@ class ActivityLocalDataSource {
       title: 'Tournoi de basketball',
       description:
           'Tournoi interéquipes en format 3 contre 3. Inscrivez votre équipe ou venez seul et on vous trouvera une équipe. Trophées pour les trois premières équipes.',
-      category: ActivityCategory.sport,
+      categorySlug: 'sport',
+      categoryLabel: 'Sport',
       date: DateTime(2026, 7, 11, 14, 0),
       registrationDeadline: DateTime(2026, 7, 8, 23, 59),
       location: 'Complexe sportif Gilles-Côté',
@@ -61,7 +64,8 @@ class ActivityLocalDataSource {
       title: 'Tournoi de volleyball',
       description:
           'Championnat annuel de volleyball du campus. Matchs en double élimination. Ambiance garantie et collations offertes entre les matchs.',
-      category: ActivityCategory.sport,
+      categorySlug: 'sport',
+      categoryLabel: 'Sport',
       date: DateTime(2026, 7, 14, 10, 0),
       registrationDeadline: DateTime(2026, 7, 11, 23, 59),
       location: 'Gymnase secondaire UQTR',
@@ -78,7 +82,8 @@ class ActivityLocalDataSource {
       title: 'Méditation guidée',
       description:
           'Session de méditation pleine conscience pour réduire le stress et améliorer la concentration. Aucune expérience requise. Coussin fourni.',
-      category: ActivityCategory.sport,
+      categorySlug: 'sport',
+      categoryLabel: 'Sport',
       date: DateTime(2026, 7, 18, 12, 0),
       registrationDeadline: DateTime(2026, 7, 15, 23, 59),
       location: 'Centre de bien-être UQTR',
@@ -95,7 +100,8 @@ class ActivityLocalDataSource {
       title: 'Atelier de poterie',
       description:
           'Découvrez l\'art de la poterie avec notre artiste résidente. Apprenez les techniques de base du tournage et du modelage. Tablier fourni, vous repartez avec votre création.',
-      category: ActivityCategory.socioculturel,
+      categorySlug: 'socioculturel',
+      categoryLabel: 'Socioculturel',
       date: DateTime(2026, 7, 9, 13, 0),
       registrationDeadline: DateTime(2026, 7, 7, 23, 59),
       location: 'Pavillon des arts UQTR',
@@ -112,7 +118,8 @@ class ActivityLocalDataSource {
       title: 'Conférence : Santé mentale',
       description:
           'Conférence animée par des professionnels sur la gestion du stress et l\'équilibre travail-vie personnelle. Panel de discussion ouvert au public UQTR.',
-      category: ActivityCategory.socioculturel,
+      categorySlug: 'socioculturel',
+      categoryLabel: 'Socioculturel',
       date: DateTime(2026, 7, 13, 16, 0),
       registrationDeadline: DateTime(2026, 7, 11, 23, 59),
       location: 'Amphithéâtre Cogeco UQTR',
@@ -129,7 +136,8 @@ class ActivityLocalDataSource {
       title: 'Cinéma en plein air',
       description:
           'Soirée cinéma sous les étoiles sur l\'esplanade du campus. Film surprise ! Apportez votre couverture et votre bonne humeur. Maïs soufflé offert.',
-      category: ActivityCategory.socioculturel,
+      categorySlug: 'socioculturel',
+      categoryLabel: 'Socioculturel',
       date: DateTime(2026, 7, 17, 21, 0),
       registrationDeadline: DateTime(2026, 7, 14, 23, 59),
       location: 'Esplanade du campus UQTR',
@@ -146,7 +154,8 @@ class ActivityLocalDataSource {
       title: 'Atelier de peinture',
       description:
           'Initiez-vous à la peinture acrylique avec notre artiste invitée. Vous repartirez avec votre œuvre originale encadrée. Tout le matériel est fourni.',
-      category: ActivityCategory.socioculturel,
+      categorySlug: 'socioculturel',
+      categoryLabel: 'Socioculturel',
       date: DateTime(2026, 7, 21, 14, 0),
       registrationDeadline: DateTime(2026, 7, 18, 23, 59),
       location: 'Studio des arts UQTR',
@@ -163,7 +172,8 @@ class ActivityLocalDataSource {
       title: 'Festival culturel UQTR',
       description:
           'Grande célébration de la diversité culturelle du campus. Nourriture, musique, danses et activités du monde entier. Venez partager votre culture !',
-      category: ActivityCategory.socioculturel,
+      categorySlug: 'socioculturel',
+      categoryLabel: 'Socioculturel',
       date: DateTime(2026, 7, 25, 11, 0),
       registrationDeadline: DateTime(2026, 7, 22, 23, 59),
       location: 'Campus UQTR — Aire commune',

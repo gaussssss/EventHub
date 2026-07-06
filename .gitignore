@@ -24,6 +24,8 @@ backoffice/src/environments/environment.development.ts
 *.db
 *.db-shm
 *.db-wal
+# Images uploadées en local (stockage de dev) — pas de versionnement
+api/src/EventHub.Api/wwwroot/uploads/
 
 # ---- Angular (back-office) ----
 backoffice/node_modules/

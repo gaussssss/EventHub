@@ -11,6 +11,7 @@ import '../../../activities/presentation/providers/activity_provider.dart';
 import '../../../activities/presentation/widgets/activity_filter_sheet.dart';
 import '../../../profile/presentation/providers/profile_provider.dart';
 import '../../../social/presentation/providers/post_provider.dart';
+import '../../../stats/presentation/providers/stats_provider.dart';
 import '../../../social/presentation/widgets/post_card.dart';
 import '../widgets/category_filter_bar.dart';
 import '../widgets/mini_calendar.dart';
@@ -28,13 +29,28 @@ class HomePage extends ConsumerWidget {
     final user = ref.watch(currentUserProvider).valueOrNull;
     final totalUsers = ref.watch(totalAppUsersProvider);
 
-    final featuredActivities = activities.take(3).toList();
+    final featuredActivities =
+        ref.watch(featuredActivitiesProvider).valueOrNull ?? const [];
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
+        child: RefreshIndicator(
+          color: AppColors.primary,
+          onRefresh: () async {
+            ref.invalidate(allActivitiesProvider);
+            ref.invalidate(filteredActivitiesProvider);
+            ref.invalidate(featuredActivitiesProvider);
+            ref.invalidate(allPostsProvider);
+            ref.invalidate(communityStatsProvider);
+            ref.invalidate(currentUserProvider);
+            await Future.wait([
+              ref.read(featuredActivitiesProvider.future),
+              ref.read(allPostsProvider.future),
+            ]);
+          },
+          child: CustomScrollView(
+            slivers: [
             SliverAppBar(
               backgroundColor: AppColors.background,
               surfaceTintColor: Colors.transparent,
@@ -238,7 +254,8 @@ class HomePage extends ConsumerWidget {
                 },
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -388,9 +405,7 @@ class _FeaturedCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: activity.category == ActivityCategory.sport
-                      ? AppColors.sportBadge
-                      : AppColors.culturalBadge,
+                  color: Colors.black.withValues(alpha: 0.45),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(

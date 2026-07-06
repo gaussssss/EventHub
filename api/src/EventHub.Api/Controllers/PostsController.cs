@@ -25,13 +25,14 @@ public class PostsController : ControllerBase
     /// <summary>Fil communautaire (GET /api/posts).</summary>
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<PostDto>>> Feed(CancellationToken cancellationToken)
-        => Ok(await _sender.Send(new GetFeedQuery(), cancellationToken));
+        => Ok(await _sender.Send(new GetFeedQuery(_currentUser.UserId), cancellationToken));
 
     /// <summary>Détail d'une publication (GET /api/posts/{id}).</summary>
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<PostDto>> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var post = await _sender.Send(new GetPostByIdQuery(id), cancellationToken);
+        var post = await _sender.Send(
+            new GetPostByIdQuery(id, _currentUser.UserId), cancellationToken);
         return post is null ? NotFound() : Ok(post);
     }
 

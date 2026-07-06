@@ -12,5 +12,5 @@ public sealed class GetFeedHandler : IQueryHandler<GetFeedQuery, IReadOnlyList<P
 
     public Task<IReadOnlyList<PostDto>> HandleAsync(
         GetFeedQuery query, CancellationToken cancellationToken = default) =>
-        _posts.GetFeedAsync(cancellationToken);
+        _posts.GetFeedAsync(query.CurrentUserId, cancellationToken);
 }

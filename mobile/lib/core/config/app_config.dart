@@ -1,14 +1,20 @@
 /// Configuration centrale de l'application.
 ///
-/// Tant que l'API n'est pas prête, [useMockData] reste à `true` : les dépôts
-/// lisent les sources locales. Le jour du branchement, il suffira de passer
-/// [useMockData] à `false` et de renseigner [apiBaseUrl] + les identifiants
-/// Microsoft Entra (voir docs/BACKEND_MANIFEST.md §1).
+/// Le mode « données » suit la configuration : dès que l'auth Microsoft Entra
+/// est renseignée (dart-defines tenant + client), l'app lit l'**API réelle** ;
+/// sans config, elle tourne en **mock** (démo hors-ligne). On peut forcer le
+/// mock même avec l'auth réelle via `--dart-define=USE_MOCK_DATA=true`
+/// (voir docs/BACKEND_MANIFEST.md §1).
 class AppConfig {
   const AppConfig._();
 
-  /// Bascule sources locales ⇄ API distante.
-  static const bool useMockData = true;
+  /// Force le mode mock même si l'auth réelle est configurée (débogage / démo).
+  static const bool _forceMockData =
+      bool.fromEnvironment('USE_MOCK_DATA', defaultValue: false);
+
+  /// Bascule sources locales ⇄ API distante. `true` = sources locales (mock).
+  /// Live dès que l'auth réelle est configurée, sauf override explicite.
+  static bool get useMockData => _forceMockData || !useRealAuth;
 
   /// Latence simulée des sources locales (rend visibles les états de chargement).
   static const Duration mockLatency = Duration(milliseconds: 350);

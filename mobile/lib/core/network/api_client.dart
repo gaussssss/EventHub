@@ -14,8 +14,24 @@ import '../storage/token_storage.dart';
 class ApiClient {
   final Dio _dio;
 
-  ApiClient(TokenStorage tokens, {Dio? dio})
-      : _dio = dio ??
+  /// Appelé quand l'API répond `401` et que le rafraîchissement silencieux a
+  /// échoué (ou est absent) → la couche Auth clôt la session et le routeur
+  /// redirige vers l'écran de connexion.
+  final void Function()? _onUnauthorized;
+
+  /// Rafraîchit silencieusement l'access token (via le refresh token) et renvoie
+  /// le nouveau, ou `null` si impossible. Déclenché une seule fois par requête
+  /// sur un `401` avant d'envisager la déconnexion.
+  final Future<String?> Function()? _onRefreshToken;
+
+  ApiClient(
+    TokenStorage tokens, {
+    Dio? dio,
+    void Function()? onUnauthorized,
+    Future<String?> Function()? onRefreshToken,
+  })  : _onUnauthorized = onUnauthorized,
+        _onRefreshToken = onRefreshToken,
+        _dio = dio ??
             Dio(BaseOptions(
               baseUrl: AppConfig.apiBaseUrl,
               connectTimeout: const Duration(seconds: 10),
@@ -29,6 +45,27 @@ class ApiClient {
           options.headers['Authorization'] = 'Bearer $token';
         }
         handler.next(options);
+      },
+      onError: (e, handler) async {
+        final is401 = e.response?.statusCode == 401;
+        final alreadyRetried = e.requestOptions.extra['__retried__'] == true;
+        // Sur un 401 : une seule tentative de refresh silencieux + rejeu de la
+        // requête. Si le refresh aboutit, l'appelant ne voit jamais l'erreur.
+        if (is401 && !alreadyRetried && _onRefreshToken != null) {
+          final newToken = await _onRefreshToken();
+          if (newToken != null && newToken.isNotEmpty) {
+            final req = e.requestOptions;
+            req.extra['__retried__'] = true; // garde-fou anti-boucle
+            req.headers['Authorization'] = 'Bearer $newToken';
+            try {
+              final response = await _dio.fetch(req);
+              return handler.resolve(response);
+            } on DioException catch (retryError) {
+              return handler.next(retryError);
+            }
+          }
+        }
+        handler.next(e);
       },
     ));
   }
@@ -66,7 +103,11 @@ class ApiClient {
     }
 
     final status = e.response?.statusCode ?? 0;
-    if (status == 401) return const Failure.unauthorized();
+    if (status == 401) {
+      // Jeton refusé par l'API → déconnexion automatique.
+      _onUnauthorized?.call();
+      return const Failure.unauthorized();
+    }
     if (status == 404) return const Failure.notFound();
     if (status >= 500) return const Failure.server();
 

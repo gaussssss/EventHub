@@ -14,9 +14,10 @@ class PostCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final likedIds = ref.watch(likedPostsProvider);
-    final isLiked = likedIds.contains(post.id);
-    final displayLikes = post.likesCount + (isLiked ? 1 : 0);
+    final overrides = ref.watch(likeOverrideProvider);
+    final like = likeDisplay(overrides, post);
+    final isLiked = like.liked;
+    final displayLikes = like.count;
 
     return GestureDetector(
       onTap: onTap,
@@ -96,15 +97,18 @@ class PostCard extends ConsumerWidget {
                   Row(
                     children: [
                       GestureDetector(
-                        onTap: () =>
-                            ref.read(likedPostsProvider.notifier).toggle(post.id),
+                        onTap: () => ref
+                            .read(likeOverrideProvider.notifier)
+                            .toggle(post.id, post.isLikedByMe),
                         child: Row(
                           children: [
                             Icon(
                               isLiked
                                   ? Iconsax.heart_copy
                                   : Iconsax.heart,
-                              color: AppColors.heart,
+                              color: isLiked
+                                  ? AppColors.heart
+                                  : AppColors.textLight,
                               size: 22,
                             ),
                             const SizedBox(width: 4),

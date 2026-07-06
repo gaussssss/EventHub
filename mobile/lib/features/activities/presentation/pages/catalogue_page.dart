@@ -48,7 +48,7 @@ class CataloguePage extends ConsumerWidget {
             const SizedBox(height: 4),
             _SearchField(query: searchQuery),
             const SizedBox(height: 14),
-            _CategoryRow(selected: filter.category),
+            _CategoryRow(selected: filter.categorySlug),
             if (filter.availableOnly || filter.dateRange != null) ...[
               const SizedBox(height: 10),
               _ActiveFilterRow(filter: filter),
@@ -80,25 +80,41 @@ class CataloguePage extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       Expanded(
-                        child: displayed.isEmpty
-                            ? const _EmptyState()
-                            : ListView.separated(
-                                padding: const EdgeInsets.fromLTRB(
-                                    16, 4, 16, 110),
-                                itemCount: displayed.length,
-                                separatorBuilder: (_, _) =>
-                                    const SizedBox(height: 12),
-                                itemBuilder: (context, index) {
-                                  final activity = displayed[index];
-                                  return ActivityCard(
-                                    activity: activity,
-                                    isRegistered:
-                                        registeredIds.contains(activity.id),
-                                    onTap: () => context
-                                        .push('/activity/${activity.id}'),
-                                  );
-                                },
-                              ),
+                        child: RefreshIndicator(
+                          color: AppColors.primary,
+                          onRefresh: () async {
+                            ref.invalidate(allActivitiesProvider);
+                            await ref.read(allActivitiesProvider.future);
+                          },
+                          child: displayed.isEmpty
+                              ? ListView(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  children: const [
+                                    SizedBox(height: 100),
+                                    _EmptyState(),
+                                  ],
+                                )
+                              : ListView.separated(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  padding: const EdgeInsets.fromLTRB(
+                                      16, 4, 16, 110),
+                                  itemCount: displayed.length,
+                                  separatorBuilder: (_, _) =>
+                                      const SizedBox(height: 12),
+                                  itemBuilder: (context, index) {
+                                    final activity = displayed[index];
+                                    return ActivityCard(
+                                      activity: activity,
+                                      isRegistered:
+                                          registeredIds.contains(activity.id),
+                                      onTap: () => context
+                                          .push('/activity/${activity.id}'),
+                                    );
+                                  },
+                                ),
+                        ),
                       ),
                     ],
                   );
@@ -236,12 +252,13 @@ class _SearchField extends ConsumerWidget {
 }
 
 class _CategoryRow extends ConsumerWidget {
-  final ActivityCategory? selected;
+  final String? selected;
   const _CategoryRow({required this.selected});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(activityFilterProvider.notifier);
+    final categories = ref.watch(categoriesProvider).valueOrNull ?? const [];
     return SizedBox(
       height: 40,
       child: ListView(
@@ -253,20 +270,14 @@ class _CategoryRow extends ConsumerWidget {
             isSelected: selected == null,
             onTap: () => notifier.setCategory(null),
           ),
-          const SizedBox(width: 8),
-          CategoryChip(
-            label: 'Sport',
-            icon: Iconsax.activity,
-            isSelected: selected == ActivityCategory.sport,
-            onTap: () => notifier.setCategory(ActivityCategory.sport),
-          ),
-          const SizedBox(width: 8),
-          CategoryChip(
-            label: 'Socioculturel',
-            icon: Iconsax.music,
-            isSelected: selected == ActivityCategory.socioculturel,
-            onTap: () => notifier.setCategory(ActivityCategory.socioculturel),
-          ),
+          for (final c in categories) ...[
+            const SizedBox(width: 8),
+            CategoryChip(
+              label: c.label,
+              isSelected: selected == c.slug,
+              onTap: () => notifier.setCategory(c.slug),
+            ),
+          ],
         ],
       ),
     );

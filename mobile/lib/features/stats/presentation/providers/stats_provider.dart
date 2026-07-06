@@ -8,9 +8,10 @@ final statsRemoteDataSourceProvider = Provider<StatsRemoteDataSource>((ref) {
   return StatsRemoteDataSource(ref.watch(apiClientProvider));
 });
 
-/// Statistiques communautaires. En mock : valeurs de démonstration ; sinon
-/// `GET /api/stats/community`. Les scalaires dérivés (inscrits, cœurs UQTR)
-/// retombent sur ces valeurs tant que la requête n'a pas abouti.
+/// Statistiques communautaires (`GET /api/stats/community`, endpoint public).
+/// Live dès que l'app n'est pas en mock (auth réelle configurée) ; sinon valeurs
+/// de démonstration. Les scalaires dérivés (inscrits, cœurs UQTR) retombent sur
+/// le mock tant que la requête n'a pas abouti.
 final communityStatsProvider = FutureProvider<CommunityStats>((ref) async {
   if (AppConfig.useMockData) {
     await Future.delayed(AppConfig.mockLatency);

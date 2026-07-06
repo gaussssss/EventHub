@@ -1,6 +1,6 @@
 namespace EventHub.Domain.ReadModels;
 
-public sealed record CommentDto(string AuthorName, string Text, DateTime CreatedAt);
+public sealed record CommentDto(Guid Id, string AuthorName, string Text, DateTime CreatedAt);
 
 /// <summary>Publication du fil (contrat mobile : voir docs/BACKEND_MANIFEST.md §3.0).</summary>
 public sealed record PostDto
@@ -13,5 +13,9 @@ public sealed record PostDto
     public string? ActivityName { get; init; }
     public required DateTime CreatedAt { get; init; }
     public int LikesCount { get; init; }
+
+    /// <summary>Vrai si l'utilisateur courant a « aimé » ce post (fil authentifié).</summary>
+    public bool IsLikedByMe { get; init; }
+
     public IReadOnlyList<CommentDto> Comments { get; init; } = [];
 }

@@ -10,6 +10,7 @@ class PostModel extends Post {
     required super.activityName,
     required super.createdAt,
     required super.likesCount,
+    super.isLikedByMe,
     super.comments,
   });
 
@@ -23,6 +24,7 @@ class PostModel extends Post {
       activityName: (json['activityName'] ?? '') as String,
       createdAt: DateTime.parse(json['createdAt'] as String).toLocal(),
       likesCount: (json['likesCount'] ?? 0) as int,
+      isLikedByMe: (json['isLikedByMe'] ?? false) as bool,
       comments: (json['comments'] as List<dynamic>? ?? [])
           .map((c) => _commentFromJson(c as Map<String, dynamic>))
           .toList(),
@@ -31,6 +33,7 @@ class PostModel extends Post {
 
   static PostComment _commentFromJson(Map<String, dynamic> json) {
     return PostComment(
+      id: (json['id'] ?? '') as String,
       authorName: json['authorName'] as String,
       text: json['text'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String).toLocal(),

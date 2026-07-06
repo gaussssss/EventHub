@@ -12,5 +12,5 @@ public sealed class GetPostByIdHandler : IQueryHandler<GetPostByIdQuery, PostDto
 
     public Task<PostDto?> HandleAsync(
         GetPostByIdQuery query, CancellationToken cancellationToken = default) =>
-        _posts.GetByIdAsync(query.Id, cancellationToken);
+        _posts.GetByIdAsync(query.Id, query.CurrentUserId, cancellationToken);
 }

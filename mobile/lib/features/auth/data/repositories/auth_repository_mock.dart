@@ -34,5 +34,11 @@ class AuthRepositoryMock implements AuthRepository {
   }
 
   @override
+  Future<String?> refreshAccessToken() async {
+    // Le mock n'expire jamais : on renvoie le jeton stocké tel quel.
+    return _tokens.readAccessToken();
+  }
+
+  @override
   Future<void> signOut() => _tokens.clear();
 }

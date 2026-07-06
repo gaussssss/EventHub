@@ -17,20 +17,22 @@ public sealed class PostReadRepository : IPostReadRepository
 
     public PostReadRepository(EventHubDbContext db) => _db = db;
 
-    public async Task<IReadOnlyList<PostDto>> GetFeedAsync(CancellationToken cancellationToken = default) =>
+    public async Task<IReadOnlyList<PostDto>> GetFeedAsync(
+        Guid? currentUserId = null, CancellationToken cancellationToken = default) =>
         await _db.Posts.AsNoTracking()
             .Where(p => p.Status == "published")
             .OrderByDescending(p => p.CreatedAt)
-            .Select(ToDto())
+            .Select(ToDto(currentUserId))
             .ToListAsync(cancellationToken);
 
-    public async Task<PostDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+    public async Task<PostDto?> GetByIdAsync(
+        Guid id, Guid? currentUserId = null, CancellationToken cancellationToken = default) =>
         await _db.Posts.AsNoTracking()
             .Where(p => p.Id == id && p.Status == "published")
-            .Select(ToDto())
+            .Select(ToDto(currentUserId))
             .FirstOrDefaultAsync(cancellationToken);
 
-    private Expression<Func<Post, PostDto>> ToDto() => p => new PostDto
+    private Expression<Func<Post, PostDto>> ToDto(Guid? currentUserId) => p => new PostDto
     {
         Id = p.Id,
         AuthorName = _db.Users.Where(u => u.Id == p.AuthorId).Select(u => u.Name).FirstOrDefault()
@@ -43,10 +45,12 @@ public sealed class PostReadRepository : IPostReadRepository
             : _db.Activities.Where(a => a.Id == p.ActivityId).Select(a => a.Title).FirstOrDefault(),
         CreatedAt = p.CreatedAt,
         LikesCount = p.Likes.Count,
+        IsLikedByMe = currentUserId != null && p.Likes.Any(l => l.UserId == currentUserId),
         Comments = p.Comments
             .Where(c => c.Status == "published")
             .OrderBy(c => c.CreatedAt)
             .Select(c => new CommentDto(
+                c.Id,
                 _db.Users.Where(u => u.Id == c.AuthorId).Select(u => u.Name).FirstOrDefault()
                     ?? string.Empty,
                 c.Text,

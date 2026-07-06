@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
-import '../../domain/entities/activity.dart';
 import '../providers/activity_provider.dart';
 import 'category_chip.dart';
 
@@ -39,9 +38,10 @@ class _ActivityFilterSheetState extends ConsumerState<ActivityFilterSheet> {
   Widget build(BuildContext context) {
     final filter = ref.watch(activityFilterProvider);
     final notifier = ref.read(activityFilterProvider.notifier);
-    final selected = filter.category;
+    final selected = filter.categorySlug;
     final availableOnly = filter.availableOnly;
     final range = filter.dateRange;
+    final categories = ref.watch(categoriesProvider).valueOrNull ?? const [];
 
     return Container(
       decoration: const BoxDecoration(
@@ -77,7 +77,9 @@ class _ActivityFilterSheetState extends ConsumerState<ActivityFilterSheet> {
           const SizedBox(height: 20),
           const _SectionLabel('Catégorie'),
           const SizedBox(height: 10),
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
               CategoryChip(
                 label: 'Tout',
@@ -85,23 +87,13 @@ class _ActivityFilterSheetState extends ConsumerState<ActivityFilterSheet> {
                 isSelected: selected == null,
                 onTap: () => notifier.setCategory(null),
               ),
-              const SizedBox(width: 8),
-              CategoryChip(
-                label: 'Sport',
-                icon: Iconsax.activity,
-                restingColor: AppColors.background,
-                isSelected: selected == ActivityCategory.sport,
-                onTap: () => notifier.setCategory(ActivityCategory.sport),
-              ),
-              const SizedBox(width: 8),
-              CategoryChip(
-                label: 'Culture',
-                icon: Iconsax.music,
-                restingColor: AppColors.background,
-                isSelected: selected == ActivityCategory.socioculturel,
-                onTap: () =>
-                    notifier.setCategory(ActivityCategory.socioculturel),
-              ),
+              for (final c in categories)
+                CategoryChip(
+                  label: c.label,
+                  restingColor: AppColors.background,
+                  isSelected: selected == c.slug,
+                  onTap: () => notifier.setCategory(c.slug),
+                ),
             ],
           ),
           const SizedBox(height: 22),
@@ -171,6 +163,21 @@ class _ActivityFilterSheetState extends ConsumerState<ActivityFilterSheet> {
               Switch.adaptive(
                 value: availableOnly,
                 onChanged: notifier.setAvailableOnly,
+                activeThumbColor: Colors.white,
+                activeTrackColor: AppColors.primary,
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Voir les activités passées',
+                style: TextStyle(fontSize: 15, color: AppColors.textDark),
+              ),
+              Switch.adaptive(
+                value: filter.includePast,
+                onChanged: notifier.setIncludePast,
                 activeThumbColor: Colors.white,
                 activeTrackColor: AppColors.primary,
               ),

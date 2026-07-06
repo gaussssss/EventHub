@@ -36,9 +36,7 @@ class ActivityDetailPage extends ConsumerWidget {
         }
 
         final isRegistered = registeredIds.contains(activity.id);
-        final isSport = activity.category == ActivityCategory.sport;
-        final categoryColor =
-            isSport ? AppColors.sportBadge : AppColors.culturalBadge;
+        const categoryColor = AppColors.primary;
         final spotsLeft =
             activity.maxParticipants - activity.currentParticipants;
         final isFull = spotsLeft <= 0;

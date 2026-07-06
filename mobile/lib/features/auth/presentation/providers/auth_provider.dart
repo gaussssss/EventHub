@@ -33,6 +33,14 @@ class AuthController extends AsyncNotifier<User?> {
     await ref.read(authRepositoryProvider).signOut();
     state = const AsyncValue.data(null);
   }
+
+  /// Session expirée/révoquée (401 renvoyé par l'API). Purge les jetons et
+  /// ferme la session. Idempotent : ne fait rien si déjà déconnecté.
+  Future<void> sessionExpired() async {
+    if (state.valueOrNull == null) return;
+    await ref.read(authRepositoryProvider).signOut();
+    state = const AsyncValue.data(null);
+  }
 }
 
 final authControllerProvider =

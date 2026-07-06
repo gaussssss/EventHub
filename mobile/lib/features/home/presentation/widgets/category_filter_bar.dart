@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
-import '../../../activities/domain/entities/activity.dart';
 import '../../../activities/presentation/providers/activity_provider.dart';
 import '../../../activities/presentation/widgets/category_chip.dart';
 
@@ -10,8 +8,9 @@ class CategoryFilterBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selected = ref.watch(activityFilterProvider).category;
+    final selected = ref.watch(activityFilterProvider).categorySlug;
     final notifier = ref.read(activityFilterProvider.notifier);
+    final categories = ref.watch(categoriesProvider).valueOrNull ?? const [];
 
     return SizedBox(
       height: 40,
@@ -24,21 +23,14 @@ class CategoryFilterBar extends ConsumerWidget {
             isSelected: selected == null,
             onTap: () => notifier.setCategory(null),
           ),
-          const SizedBox(width: 8),
-          CategoryChip(
-            label: 'Sport',
-            icon: Iconsax.activity,
-            isSelected: selected == ActivityCategory.sport,
-            onTap: () => notifier.setCategory(ActivityCategory.sport),
-          ),
-          const SizedBox(width: 8),
-          CategoryChip(
-            label: 'Socioculturel',
-            icon: Iconsax.music,
-            isSelected: selected == ActivityCategory.socioculturel,
-            onTap: () =>
-                notifier.setCategory(ActivityCategory.socioculturel),
-          ),
+          for (final c in categories) ...[
+            const SizedBox(width: 8),
+            CategoryChip(
+              label: c.label,
+              isSelected: selected == c.slug,
+              onTap: () => notifier.setCategory(c.slug),
+            ),
+          ],
         ],
       ),
     );

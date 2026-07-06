@@ -20,9 +20,8 @@ class ProfilePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(currentUserProvider);
     final uqtrHearts = ref.watch(totalUqtrHeartsProvider);
-    final allActivities =
-        ref.watch(allActivitiesProvider).valueOrNull ?? const [];
-    final registeredIds = ref.watch(registeredActivitiesProvider);
+    final myRegistrations =
+        ref.watch(myRegistrationsProvider).valueOrNull ?? const [];
     final customAvatar = ref.watch(avatarUrlProvider);
 
     return Scaffold(
@@ -53,9 +52,7 @@ class ProfilePage extends ConsumerWidget {
         value: userAsync,
         onRetry: () => ref.invalidate(currentUserProvider),
         data: (user) {
-          final completedActivities = allActivities
-              .where((a) => registeredIds.contains(a.id))
-              .toList();
+          final completedActivities = myRegistrations;
           return SingleChildScrollView(
         child: Column(
           children: [
@@ -121,7 +118,7 @@ class ProfilePage extends ConsumerWidget {
                         Row(
                           children: [
                             _StatChip(
-                              value: '${registeredIds.length}',
+                              value: '${myRegistrations.length}',
                               label: 'activités',
                             ),
                             const SizedBox(width: 8),

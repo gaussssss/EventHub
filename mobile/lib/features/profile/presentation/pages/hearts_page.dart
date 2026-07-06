@@ -5,58 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/async_value_widget.dart';
+import '../../domain/entities/leaderboard_entry.dart';
 import '../../domain/entities/user_profile.dart';
 import '../providers/profile_provider.dart';
-
-class _LeaderboardEntry {
-  final int rank;
-  final String name;
-  final String avatarUrl;
-  final int hearts;
-  final bool isCurrentUser;
-
-  const _LeaderboardEntry({
-    required this.rank,
-    required this.name,
-    required this.avatarUrl,
-    required this.hearts,
-    this.isCurrentUser = false,
-  });
-}
-
-const _leaderboard = [
-  _LeaderboardEntry(
-    rank: 1,
-    name: 'Sophie Martin',
-    avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&fit=crop&q=80',
-    hearts: 520,
-  ),
-  _LeaderboardEntry(
-    rank: 2,
-    name: 'Jean Lapointe',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&fit=crop&q=80',
-    hearts: 480,
-  ),
-  _LeaderboardEntry(
-    rank: 3,
-    name: 'Alex Tremblay',
-    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&fit=crop&q=80',
-    hearts: 340,
-    isCurrentUser: true,
-  ),
-  _LeaderboardEntry(
-    rank: 4,
-    name: 'Marie Tremblay',
-    avatarUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b74c?w=150&fit=crop&q=80',
-    hearts: 280,
-  ),
-  _LeaderboardEntry(
-    rank: 5,
-    name: 'Camille Roy',
-    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&fit=crop&q=80',
-    hearts: 195,
-  ),
-];
 
 class HeartsPage extends ConsumerWidget {
   const HeartsPage({super.key});
@@ -214,35 +165,114 @@ class HeartsPage extends ConsumerWidget {
                 ),
               ),
             ),
-            // Podium Top 3
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(child: _PodiumCard(entry: _leaderboard[1])),
-                  const SizedBox(width: 8),
-                  Expanded(child: _PodiumCard(entry: _leaderboard[0])),
-                  const SizedBox(width: 8),
-                  Expanded(child: _PodiumCard(entry: _leaderboard[2])),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            // Top 4 & 5
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-              itemCount: 2,
-              separatorBuilder: (_, _) => const SizedBox(height: 8),
-              itemBuilder: (context, index) =>
-                  _RankRow(entry: _leaderboard[3 + index]),
-            ),
+            _LeaderboardSection(
+                async: ref.watch(leaderboardProvider),
+                onRetry: () => ref.invalidate(leaderboardProvider)),
           ],
         ),
       ),
         ),
+    );
+  }
+}
+
+/// Section « Classement » : podium Top 3 (si assez d'entrées) puis les rangs
+/// suivants. Robuste à un nombre variable d'entrées (0, 1, 2, ou plus).
+class _LeaderboardSection extends StatelessWidget {
+  final AsyncValue<List<LeaderboardEntry>> async;
+  final VoidCallback onRetry;
+
+  const _LeaderboardSection({required this.async, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return async.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 32),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (_, _) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+        child: Column(
+          children: [
+            const Text('Classement indisponible',
+                style: TextStyle(color: AppColors.textLight)),
+            const SizedBox(height: 8),
+            OutlinedButton(onPressed: onRetry, child: const Text('Réessayer')),
+          ],
+        ),
+      ),
+      data: (entries) {
+        if (entries.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.fromLTRB(16, 0, 16, 24),
+            child: Text('Aucun classement pour le moment.',
+                style: TextStyle(color: AppColors.textLight)),
+          );
+        }
+
+        // On limite l'affichage aux 20 premiers. Si l'utilisateur courant est
+        // au-delà du 20e, on l'ajoute en dernier avec son vrai rang.
+        const limit = 20;
+        final capped = entries.take(limit).toList();
+        final meIndex = entries.indexWhere((e) => e.isMe);
+        final overflowMe = meIndex >= limit ? entries[meIndex] : null;
+
+        final top = capped.take(3).toList();
+        final rest = capped.skip(3).toList();
+        final hasPodium = top.length >= 3;
+        final rows = hasPodium ? rest : capped;
+
+        return Column(
+          children: [
+            // Podium : rendu seulement si l'on a bien un Top 3 (ordre 2-1-3).
+            if (hasPodium)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(child: _PodiumCard(entry: top[1])),
+                    const SizedBox(width: 8),
+                    Expanded(child: _PodiumCard(entry: top[0])),
+                    const SizedBox(width: 8),
+                    Expanded(child: _PodiumCard(entry: top[2])),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 12),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(16, 0, 16, overflowMe == null ? 24 : 8),
+              itemCount: rows.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 8),
+              itemBuilder: (context, index) => _RankRow(entry: rows[index]),
+            ),
+            // Ligne « c'est moi » quand l'utilisateur est hors du top 20.
+            if (overflowMe != null) ...[
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                child: Row(
+                  children: [
+                    Expanded(child: Divider(color: AppColors.divider)),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Text('•••',
+                          style: TextStyle(color: AppColors.textLight)),
+                    ),
+                    Expanded(child: Divider(color: AppColors.divider)),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                child: _RankRow(entry: overflowMe),
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 }
@@ -323,8 +353,15 @@ class _LevelConnector extends StatelessWidget {
   }
 }
 
+/// Fournisseur d'image d'avatar, ou `null` si aucune URL (→ initiale de repli).
+ImageProvider? _avatarImage(String? url) =>
+    (url != null && url.isNotEmpty) ? CachedNetworkImageProvider(url) : null;
+
+String _initial(String name) =>
+    name.trim().isEmpty ? '?' : name.trim()[0].toUpperCase();
+
 class _PodiumCard extends StatelessWidget {
-  final _LeaderboardEntry entry;
+  final LeaderboardEntry entry;
 
   const _PodiumCard({required this.entry});
 
@@ -342,12 +379,12 @@ class _PodiumCard extends StatelessWidget {
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: entry.isCurrentUser
+        color: entry.isMe
             ? AppColors.primary.withValues(alpha: 0.08)
             : AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: entry.isCurrentUser
+          color: entry.isMe
               ? AppColors.primary.withValues(alpha: 0.4)
               : rankColor.withValues(alpha: 0.5),
           width: isFirst ? 2 : 1.5,
@@ -370,9 +407,15 @@ class _PodiumCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: isFirst ? 30 : 24,
-                backgroundImage:
-                    CachedNetworkImageProvider(entry.avatarUrl),
+                backgroundImage: _avatarImage(entry.avatarUrl),
                 backgroundColor: AppColors.divider,
+                child: _avatarImage(entry.avatarUrl) == null
+                    ? Text(_initial(entry.name),
+                        style: TextStyle(
+                            fontSize: isFirst ? 22 : 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textMedium))
+                    : null,
               ),
               Positioned(
                 bottom: -4,
@@ -434,7 +477,7 @@ class _PodiumCard extends StatelessWidget {
               ),
             ],
           ),
-          if (entry.isCurrentUser) ...[
+          if (entry.isMe) ...[
             const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.symmetric(
@@ -459,7 +502,7 @@ class _PodiumCard extends StatelessWidget {
 }
 
 class _RankRow extends StatelessWidget {
-  final _LeaderboardEntry entry;
+  final LeaderboardEntry entry;
 
   const _RankRow({required this.entry});
 
@@ -468,11 +511,11 @@ class _RankRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: entry.isCurrentUser
+        color: entry.isMe
             ? AppColors.primary.withValues(alpha: 0.06)
             : AppColors.surface,
         borderRadius: BorderRadius.circular(14),
-        border: entry.isCurrentUser
+        border: entry.isMe
             ? Border.all(
                 color: AppColors.primary.withValues(alpha: 0.3))
             : null,
@@ -494,9 +537,14 @@ class _RankRow extends StatelessWidget {
           const SizedBox(width: 10),
           CircleAvatar(
             radius: 20,
-            backgroundImage:
-                CachedNetworkImageProvider(entry.avatarUrl),
+            backgroundImage: _avatarImage(entry.avatarUrl),
             backgroundColor: AppColors.divider,
+            child: _avatarImage(entry.avatarUrl) == null
+                ? Text(_initial(entry.name),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textMedium))
+                : null,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -509,7 +557,7 @@ class _RankRow extends StatelessWidget {
               ),
             ),
           ),
-          if (entry.isCurrentUser)
+          if (entry.isMe)
             Container(
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(

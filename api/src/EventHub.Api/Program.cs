@@ -16,7 +16,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Secrets/config : appsettings < user-secrets (dev) < variables d'environnement.
 // Rien de sensible n'est stocké en dur (chaîne de connexion, Authority, stockage…).
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(
+        new EventHub.Api.Json.UtcDateTimeConverter()));
 builder.Services.AddSignalR();
 
 // Services applicatifs portés par l'API (contexte HTTP, temps réel).
@@ -157,6 +159,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Fichiers statiques (images uploadées servies depuis wwwroot/uploads).
+Directory.CreateDirectory(Path.Combine(app.Environment.ContentRootPath, "wwwroot", "uploads"));
+app.UseStaticFiles();
 
 app.UseHttpLogging();
 app.UseCors("Default");

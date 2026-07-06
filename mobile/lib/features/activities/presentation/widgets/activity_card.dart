@@ -19,9 +19,6 @@ class ActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isSport = activity.category == ActivityCategory.sport;
-    final categoryColor =
-        isSport ? AppColors.sportBadge : AppColors.culturalBadge;
     final spotsLeft = activity.maxParticipants - activity.currentParticipants;
     final isFull = spotsLeft <= 0;
     final fillRatio =
@@ -47,11 +44,7 @@ class ActivityCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _Thumbnail(
-                imageUrl: activity.imageUrl,
-                categoryColor: categoryColor,
-                categoryLabel: activity.categoryLabel,
-              ),
+              _Thumbnail(imageUrl: activity.imageUrl),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -112,14 +105,8 @@ class ActivityCard extends StatelessWidget {
 
 class _Thumbnail extends StatelessWidget {
   final String imageUrl;
-  final Color categoryColor;
-  final String categoryLabel;
 
-  const _Thumbnail({
-    required this.imageUrl,
-    required this.categoryColor,
-    required this.categoryLabel,
-  });
+  const _Thumbnail({required this.imageUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -128,40 +115,14 @@ class _Thumbnail extends StatelessWidget {
       child: SizedBox(
         width: 96,
         height: 96,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            CachedNetworkImage(
-              imageUrl: imageUrl,
-              fit: BoxFit.cover,
-              placeholder: (_, _) => Container(color: AppColors.divider),
-              errorWidget: (_, _, _) => const ColoredBox(
-                color: AppColors.divider,
-                child: Icon(Iconsax.gallery, color: AppColors.textLight),
-              ),
-            ),
-            Positioned(
-              top: 6,
-              left: 6,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                decoration: BoxDecoration(
-                  color: categoryColor,
-                  borderRadius: BorderRadius.circular(7),
-                ),
-                child: Text(
-                  categoryLabel,
-                  style: const TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-              ),
-            ),
-          ],
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          fit: BoxFit.cover,
+          placeholder: (_, _) => Container(color: AppColors.divider),
+          errorWidget: (_, _, _) => const ColoredBox(
+            color: AppColors.divider,
+            child: Icon(Iconsax.gallery, color: AppColors.textLight),
+          ),
         ),
       ),
     );

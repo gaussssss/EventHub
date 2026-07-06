@@ -1,10 +1,14 @@
-enum ActivityCategory { sport, socioculturel }
-
 class Activity {
   final String id;
   final String title;
   final String description;
-  final ActivityCategory category;
+
+  /// Slug brut de la catégorie (sert au filtrage côté backend).
+  final String categorySlug;
+
+  /// Libellé d'affichage de la catégorie.
+  final String categoryLabel;
+
   final DateTime date;
   final String location;
   final String organizer;
@@ -19,7 +23,8 @@ class Activity {
     required this.id,
     required this.title,
     required this.description,
-    required this.category,
+    required this.categorySlug,
+    required this.categoryLabel,
     required this.date,
     required this.location,
     required this.organizer,
@@ -30,7 +35,4 @@ class Activity {
     this.registrationUrl,
     this.registrationDeadline,
   });
-
-  String get categoryLabel =>
-      category == ActivityCategory.sport ? 'Sport' : 'Socioculturel';
 }

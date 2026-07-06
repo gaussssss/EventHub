@@ -17,12 +17,40 @@ class ActivityRepositoryImpl implements ActivityRepository {
         _remote = remote;
 
   @override
-  Future<List<Activity>> getAllActivities() async {
+  Future<List<Activity>> getAllActivities() => getActivities();
+
+  @override
+  Future<List<Activity>> getActivities({
+    String? categorySlug,
+    bool availableOnly = false,
+    DateTime? from,
+    DateTime? to,
+  }) async {
     if (AppConfig.useMockData) {
       await Future.delayed(AppConfig.mockLatency);
-      return _local.activities;
+      var list = _local.activities;
+      if (categorySlug != null) {
+        list = list.where((a) => a.categorySlug == categorySlug).toList();
+      }
+      if (availableOnly) {
+        list = list
+            .where((a) => a.currentParticipants < a.maxParticipants)
+            .toList();
+      }
+      if (from != null) {
+        list = list.where((a) => !a.date.isBefore(from)).toList();
+      }
+      if (to != null) {
+        list = list.where((a) => !a.date.isAfter(to)).toList();
+      }
+      return list;
     }
-    return _remote.getActivities();
+    return _remote.getActivities(
+      categorySlug: categorySlug,
+      availableOnly: availableOnly,
+      from: from,
+      to: to,
+    );
   }
 
   @override

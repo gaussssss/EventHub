@@ -1,9 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../../core/config/app_config.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/error/failure.dart';
 import '../../../activities/presentation/providers/activity_provider.dart';
+import '../providers/post_provider.dart';
 
 class PublishPhotoPage extends ConsumerStatefulWidget {
   const PublishPhotoPage({super.key});
@@ -15,12 +21,78 @@ class PublishPhotoPage extends ConsumerStatefulWidget {
 class _PublishPhotoPageState extends ConsumerState<PublishPhotoPage> {
   final _captionController = TextEditingController();
   String? _selectedActivityId;
-  bool _photoSelected = false;
+  XFile? _pickedImage;
+  bool _submitting = false;
 
   @override
   void dispose() {
     _captionController.dispose();
     super.dispose();
+  }
+
+  bool get _canPublish =>
+      _pickedImage != null &&
+      _captionController.text.trim().isNotEmpty &&
+      !_submitting;
+
+  Future<void> _pickImage() async {
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+        maxWidth: 1600,
+      );
+      if (picked != null) setState(() => _pickedImage = picked);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Impossible d\'ouvrir la galerie : $e'),
+            backgroundColor: AppColors.heart),
+      );
+    }
+  }
+
+  Future<void> _publish() async {
+    final image = _pickedImage;
+    if (image == null) return;
+    setState(() => _submitting = true);
+    try {
+      if (!AppConfig.useMockData) {
+        // 1) upload de l'image choisie → URL servie par l'API.
+        final url =
+            await ref.read(uploadRemoteDataSourceProvider).uploadImage(image.path);
+        // 2) création du post avec cette URL.
+        await ref.read(postRemoteDataSourceProvider).createPost(
+              imageUrl: url,
+              caption: _captionController.text.trim(),
+              activityId: _selectedActivityId,
+            );
+        ref.invalidate(allPostsProvider); // le fil se recharge → le post apparaît
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Publication partagée avec la communauté !'),
+          backgroundColor: AppColors.primary,
+        ),
+      );
+      context.pop();
+    } on Failure catch (f) {
+      if (!mounted) return;
+      setState(() => _submitting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(f.message), backgroundColor: AppColors.heart),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _submitting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Échec de la publication : $e'),
+            backgroundColor: AppColors.heart),
+      );
+    }
   }
 
   @override
@@ -44,31 +116,31 @@ class _PublishPhotoPageState extends ConsumerState<PublishPhotoPage> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: ElevatedButton(
-              onPressed:
-                  _photoSelected && _captionController.text.isNotEmpty
-                      ? () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Photo publiée avec succès !'),
-                              backgroundColor: AppColors.primary,
-                            ),
-                          );
-                          context.pop();
-                        }
-                      : null,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                minimumSize: Size.zero,
+            padding: const EdgeInsets.fromLTRB(0, 8, 12, 8),
+            child: FilledButton.icon(
+              onPressed: _canPublish ? _publish : null,
+              icon: _submitting
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Iconsax.send_1, size: 18),
+              label: Text(_submitting ? 'Publication…' : 'Publier'),
+              style: FilledButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
+                disabledBackgroundColor: AppColors.divider,
+                disabledForegroundColor: AppColors.textLight,
                 elevation: 0,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                textStyle: const TextStyle(
+                    fontWeight: FontWeight.w700, fontSize: 14),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(24)),
               ),
-              child: const Text('Publier',
-                  style: TextStyle(fontWeight: FontWeight.w600)),
             ),
           ),
         ],
@@ -79,7 +151,7 @@ class _PublishPhotoPageState extends ConsumerState<PublishPhotoPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             GestureDetector(
-              onTap: () => setState(() => _photoSelected = true),
+              onTap: _pickImage,
               child: Container(
                 width: double.infinity,
                 height: 220,
@@ -87,10 +159,10 @@ class _PublishPhotoPageState extends ConsumerState<PublishPhotoPage> {
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: _photoSelected
+                    color: _pickedImage != null
                         ? AppColors.primary
                         : AppColors.divider,
-                    width: _photoSelected ? 2 : 1,
+                    width: _pickedImage != null ? 2 : 1,
                   ),
                   boxShadow: const [
                     BoxShadow(
@@ -100,14 +172,14 @@ class _PublishPhotoPageState extends ConsumerState<PublishPhotoPage> {
                     ),
                   ],
                 ),
-                child: _photoSelected
+                child: _pickedImage != null
                     ? Stack(
                         fit: StackFit.expand,
                         children: [
                           ClipRRect(
                             borderRadius: BorderRadius.circular(16),
-                            child: Image.network(
-                              'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&fit=crop&q=80',
+                            child: Image.file(
+                              File(_pickedImage!.path),
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -116,7 +188,7 @@ class _PublishPhotoPageState extends ConsumerState<PublishPhotoPage> {
                             right: 8,
                             child: GestureDetector(
                               onTap: () =>
-                                  setState(() => _photoSelected = false),
+                                  setState(() => _pickedImage = null),
                               child: Container(
                                 padding: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(
@@ -141,7 +213,7 @@ class _PublishPhotoPageState extends ConsumerState<PublishPhotoPage> {
                           ),
                           const SizedBox(height: 12),
                           const Text(
-                            'Appuyer pour ajouter une photo',
+                            'Appuyer pour choisir une photo',
                             style: TextStyle(
                                 color: AppColors.textLight, fontSize: 14),
                           ),
