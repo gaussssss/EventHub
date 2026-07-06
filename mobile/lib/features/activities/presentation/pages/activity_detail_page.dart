@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import '../../../../core/config/app_config.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/utils/platform_icons.dart';
@@ -332,10 +333,11 @@ class ActivityDetailPage extends ConsumerWidget {
   }
 
   Future<void> _shareActivity(Activity activity) async {
+    final link = '${AppConfig.shareBaseUrl}/activities/${activity.id}';
     final text = '🎉 ${activity.title}\n'
         '📅 ${DateFormatter.dateFull(activity.date)} à ${DateFormatter.time(activity.date)}\n'
         '📍 ${activity.location}\n\n'
-        'Découvre cet événement sur EventHub UQTR !';
+        'Découvre cet événement sur EventHub UQTR !\n$link';
 
     // Joint le logo EventHub pour que l'aperçu de la feuille de partage soit
     // marqué (iOS n'affiche pas d'icône d'app pour un partage texte seul).

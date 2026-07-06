@@ -28,6 +28,14 @@ class AppConfig {
     defaultValue: 'http://localhost:5199',
   );
 
+  /// Base des liens de partage web (`…/activities/{id}`). Doit correspondre au
+  /// `App:ShareBaseUrl` de l'API. Deviendra un vrai deep/universal link au
+  /// déploiement (domaine + config app-links). Surchargeable via dart-define.
+  static const String shareBaseUrl = String.fromEnvironment(
+    'SHARE_BASE_URL',
+    defaultValue: 'https://eventhub.uqtr.ca',
+  );
+
   // --- Microsoft Entra ID (Azure AD) --------------------------------------
   static const String entraTenantId =
       String.fromEnvironment('ENTRA_TENANT_ID', defaultValue: '');
