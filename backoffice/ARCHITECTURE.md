@@ -1,4 +1,4 @@
-# EventHub — Back Office · Architecture & conventions
+# EventHub, Back Office · Architecture & conventions
 
 Doc de référence pour l'implémentation du back-office Angular. Elle **transpose
 les patterns du projet `odtrCampagn.Client`** (Angular 20, standalone, état par
@@ -16,7 +16,7 @@ les patterns du projet `odtrCampagn.Client`** (Angular 20, standalone, état par
 | HTTP               | `HttpClient` + `withInterceptors([...])`                    |
 | Routing            | `provideRouter` + **lazy `loadComponent`**                  |
 | Styles             | **Tailwind v4** + **daisyUI** (via `@tailwindcss/postcss`)  |
-| API                | EventHub Web API — base `http://localhost:5199/api`         |
+| API                | EventHub Web API, base `http://localhost:5199/api`         |
 | Lint/format        | Prettier (`printWidth: 100`, `singleQuote: true`)           |
 
 ---
@@ -131,7 +131,7 @@ export class LoadCategories {
 **Standalone**, dépendances par `inject()` (states + use-cases + modalStates),
 `ngOnInit()` déclenche le `handler()`. Le template lit directement les **signals**
 `states.items()` / `useCase.isLoading()` avec le **control flow** `@if` / `@for`
-(`track`). Pas de `.scss` sauf besoin réel — tout en classes Tailwind/daisyUI.
+(`track`). Pas de `.scss` sauf besoin réel, tout en classes Tailwind/daisyUI.
 
 ```ts
 @Component({
@@ -151,12 +151,12 @@ export class CategoryList implements OnInit {
 
 ## 4. Shared
 
-### 4.1 Toasts — `toastStates.ts` + `toast` / `toast-list`
+### 4.1 Toasts, `toastStates.ts` + `toast` / `toast-list`
 Store signal `IToast[]`, `addToast` (id auto-incrémenté), `removeToast`.
 `IToast { message; messageType; id }`, `ToastType { success|warning|info|error }`.
 Rendu global via `<app-toast-list>` posé dans le `layout`.
 
-### 4.2 Modales — `modalStates.ts` (typé)
+### 4.2 Modales, `modalStates.ts` (typé)
 Registre de modales ouvertes via une **`Map<ModalId, data>`** avec un type
 **`ModalData`** qui mappe chaque id de modale à la forme de ses données →
 `open(id, data)`, `getData(id)`, `isOpen(id)`, `close(id)` **type-safe**.
@@ -202,19 +202,19 @@ export type ModalData = {
 |--------------|------------------------|-----------------------------------------------------------|
 | API base     | `localhost:5998/api`   | **`localhost:5199/api`**                                   |
 | Auth         | Supabase (Google OAuth)| **Microsoft Entra** (voir décision ci-dessous)            |
-| Rôles        | —                      | **`organizer` / `moderator` / `admin`** (routes `/admin/*`) |
+| Rôles        |,                      | **`organizer` / `moderator` / `admin`** (routes `/admin/*`) |
 | Domaine      | campagnes/contacts     | activités, modération, utilisateurs, catégories, dashboard |
 
 ### Surface API admin déjà disponible (à consommer)
-- `GET  /api/admin/dashboard/overview` — *admin, moderator*
+- `GET  /api/admin/dashboard/overview`, *admin, moderator*
 - `GET  /api/admin/exports/registrations.csv`
-- `PUT/POST /api/admin/activities/{id}` (+ `publish|cancel|feature`), `GET .../registrations` — *organizer, admin*
-- `GET  /api/admin/reports`, `POST /api/admin/posts|comments/{id}/hide` — *moderator, admin*
-- `PATCH/DELETE /api/admin/categories/{id}` — *admin*
-- `PATCH/DELETE /api/admin/organizers/{id}` — *admin*
-- `PATCH /api/admin/users/{id}`, `POST /api/admin/users/{id}/hearts` — *admin*
-- `GET/PATCH /api/admin/settings/gamification` — *admin*
-- `POST /api/admin/notifications/broadcast` — *admin*
+- `PUT/POST /api/admin/activities/{id}` (+ `publish|cancel|feature`), `GET .../registrations`, *organizer, admin*
+- `GET  /api/admin/reports`, `POST /api/admin/posts|comments/{id}/hide`, *moderator, admin*
+- `PATCH/DELETE /api/admin/categories/{id}`, *admin*
+- `PATCH/DELETE /api/admin/organizers/{id}`, *admin*
+- `PATCH /api/admin/users/{id}`, `POST /api/admin/users/{id}/hearts`, *admin*
+- `GET/PATCH /api/admin/settings/gamification`, *admin*
+- `POST /api/admin/notifications/broadcast`, *admin*
 
 > Côté API : CORS policy `Default` (origines via `Cors:AllowedOrigins`, sinon
 > `AllowAnyOrigin` en l'absence de config), auth JWT Entra **ou** schéma dev

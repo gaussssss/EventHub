@@ -1,4 +1,4 @@
-# EventHub — API Web (.NET 8, Clean Architecture)
+# EventHub, API Web (.NET 8, Clean Architecture)
 
 Backend REST d'EventHub. **Spécification** : [../docs/BACKEND_MANIFEST.md](../docs/BACKEND_MANIFEST.md).
 
@@ -23,7 +23,7 @@ Chaque cas d'usage est un message **`ICommand<T>`** (écriture) ou **`IQuery<T>`
 ne dépendent que de **`ISender`** (médiateur maison, `Infrastructure/Messaging/Sender.cs`),
 qui résout le handler par type et lui délègue l'exécution. Les handlers sont
 **découverts et enregistrés automatiquement** par scan de l'assembly Application
-(voir `AddApplicationHandlers` dans `DependencyInjection.cs`) — aucun registre à tenir.
+(voir `AddApplicationHandlers` dans `DependencyInjection.cs`), aucun registre à tenir.
 Pas de dépendance externe (ni MediatR) : dispatch par réflexion.
 
 ### Modèle de domaine (DDD tactique)
@@ -35,9 +35,9 @@ mutations par **méthodes métier** (`Registration.Cancel/PromoteFromWaitlist/Ma
 invalide.
 
 **Le Domaine possède tous les ports** (hexagonal) et **ne dépend de rien** :
-- `Domain/Repositories/` — dépôts d'écriture (agrégats) **et de lecture** (read-repos) ;
-- `Domain/ReadModels/` — DTOs retournés par les read-repos (`ActivityDto`, `PostDto`…) ;
-- `Domain/Services/` — ports techniques `IClock`, `ICurrentUser`, `IRealtimeNotifier`, `IUserAdminService`.
+- `Domain/Repositories/`, dépôts d'écriture (agrégats) **et de lecture** (read-repos) ;
+- `Domain/ReadModels/`, DTOs retournés par les read-repos (`ActivityDto`, `PostDto`…) ;
+- `Domain/Services/`, ports techniques `IClock`, `ICurrentUser`, `IRealtimeNotifier`, `IUserAdminService`.
 
 `Infrastructure` (EF, `SystemClock`, `UserAdminService`) et `Api` (`CurrentUser`,
 `SignalRNotifier`) n'implémentent **que** des interfaces du Domaine. Le dispatcher CQRS
@@ -50,7 +50,7 @@ en Application les **résultats assemblés** (`RegistrationResult`, `HeartsSumma
 L'invariant de capacité est protégé par **concurrence optimiste** : `Activity` porte
 un jeton `Version` (`IsConcurrencyToken`). S'inscrire consomme une place via
 `Activity.ClaimSpot(...)` (nouveau `Version`) ; deux demandes simultanées sur la
-dernière place **entrent en conflit sur la même ligne** — la perdante reçoit une
+dernière place **entrent en conflit sur la même ligne**, la perdante reçoit une
 `ConcurrencyConflictException` (traduite depuis EF dans `RegistrationRepository`),
 est **rejouée** par le handler (jusqu'à 3 fois) et bascule en liste d'attente.
 Jamais de sur-réservation. Couvert par `RegisterForActivityHandlerTests` (rejeu
@@ -80,9 +80,10 @@ Application/Common/
 - **EF Core 8 + SQLite** (`Microsoft.EntityFrameworkCore.Sqlite`), schéma géré par
   **migrations** (`InitialCreate`), appliquées au démarrage (`Database.Migrate()`).
 - **ASP.NET Core Identity** (`IdentityCore` + rôles, clé `Guid`).
-- **Auth Microsoft Entra ID** : JWT Bearer câblé mais **désactivé tant que la
-  config (`Authentication:Authority` / `Audience`) n'est pas fournie** — l'API
-  tourne en accès ouvert en dev.
+- **Auth Microsoft Entra ID** : JWT Bearer **actif dès que la config est fournie**
+  (`Authentication:Authority` / `Audience`, via **user-secrets** en dev), avec
+  provisioning JIT des utilisateurs et rôles en base. Sans config, repli sur le
+  schéma dev (`X-User-Id`), utilisé par les tests.
 - Tests : **xUnit**, **FluentAssertions**, **Moq**, `Microsoft.AspNetCore.Mvc.Testing`.
 
 ## Commandes
@@ -118,10 +119,20 @@ dotnet ef migrations add <Nom> --project src/EventHub.Infrastructure --startup-p
 | GET | `/api/admin/reports` | Back office : file des signalements ouverts (auteur, cible, motif) |
 | POST | `/api/admin/posts/{id}/hide` | Masquer un post → disparaît du fil + clôt ses signalements |
 | POST | `/api/admin/comments/{id}/hide` | Masquer un commentaire → disparaît du détail |
-| GET | `/api/admin/users` | Back office : rechercher des utilisateurs (`?q=`) — rôle, statut, cœurs |
+| GET | `/api/admin/users` | Back office : rechercher des utilisateurs (`?q=`), rôle, statut, cœurs |
 | PATCH | `/api/admin/users/{id}` | Changer le rôle (`student`/`organizer`/`moderator`/`admin`) et/ou le statut |
 | POST | `/api/admin/users/{id}/hearts` | Ajustement manuel de cœurs (`hearts`, `reason`) → `{ totalHearts }` |
-| WS | `/hubs/notifications` | Hub SignalR — évènements `activityParticipantsChanged`, `registrationPromoted` |
+| POST | `/api/activities/{id}/check-in` | **Auto-émargement par QR** : jeton secret + inscrit + fenêtre horaire → présence confirmée, cœurs crédités (idempotent) |
+| GET | `/api/me/registrations` | Mes activités inscrites (avec `myStatus` : registered/attended/noshow/waitlisted) |
+| POST | `/api/me/avatar` | Persiste la photo de profil (chemin renvoyé par l'upload) |
+| POST | `/api/uploads/image` | Upload d'image (multipart) → chemin **relatif** `/uploads/…` (jamais de domaine en base) |
+| GET | `/api/categories` · `/api/leaderboard` · `/api/stats/community` | Référentiels, classement et stats publics |
+| GET | `/api/about/contributors` | Contributeurs de la page « À propos » (tri par ordre) |
+| CRUD | `/api/admin/contributors` | Back office : gestion des contributeurs |
+| CRUD | `/api/admin/categories` · `/api/admin/organizers` | Back office : référentiels |
+| GET/PATCH | `/api/admin/settings/gamification` | Seuils de niveaux (Argent/Or) |
+| POST | `/api/admin/notifications/broadcast` | Diffusion d'une notification |
+| WS | `/hubs/notifications` | Hub SignalR, évènements `activityParticipantsChanged`, `registrationPromoted` |
 
 > Réponses en **camelCase**, conformes au contrat figé par l'app mobile
 > ([BACKEND_MANIFEST.md §3.0](../docs/BACKEND_MANIFEST.md)).
@@ -132,7 +143,7 @@ dotnet ef migrations add <Nom> --project src/EventHub.Infrastructure --startup-p
 ## Transverse (production-readiness)
 
 - **Santé** : `GET /health` → `{ status, version }` (sonde + connectivité base).
-- **Erreurs** : gestionnaire global → **ProblemDetails** (RFC 7807) — invariants de
+- **Erreurs** : gestionnaire global → **ProblemDetails** (RFC 7807), invariants de
   domaine → 400, conflit de concurrence → 409, reste → 500 (détail interne journalisé,
   non divulgué).
 - **CORS** : politique `Default` pilotée par `Cors:AllowedOrigins` (tout autoriser si vide, dev).
@@ -141,11 +152,11 @@ dotnet ef migrations add <Nom> --project src/EventHub.Infrastructure --startup-p
 - **Secrets** : `appsettings` < **user-secrets** (dev, `UserSecretsId`) < variables
   d'environnement ; aucune valeur sensible en dur (connexion, Authority, stockage).
 
-## Authentification (Microsoft Entra ID — Option B)
+## Authentification (Microsoft Entra ID, Option B)
 
 Le contrôle d'accès est **en place et testé**, avec deux modes :
 
-- **Mode dev (par défaut)** : schéma `Dev` — l'identité vient des en-têtes
+- **Mode dev (par défaut)** : schéma `Dev`, l'identité vient des en-têtes
   `X-User-Id` (id interne) et `X-User-Roles` (rôles, séparés par des virgules).
   Permet à `[Authorize]` de fonctionner en tests/dev. **Ne pas utiliser en prod.**
 - **Mode Entra** : dès que `Authentication:Authority` est renseigné, l'API **valide
@@ -174,9 +185,9 @@ scope `api://<clientId-API>/access_as_user` et envoie l'access token en
 
 ## Reste à faire (itérations suivantes)
 
-**Auth Entra** : machinerie **en place** (validation des jetons + provisioning JIT +
-`[Authorize]`), il ne reste qu'à **fournir la config** (`Authority`/`Audience`) pour
-basculer du mode dev au mode Entra — voir la section *Authentification* ci-dessus.
+**Auth Entra** : **active en dev** (config `Authority`/`Audience`/`AdminEmails`
+fournie via user-secrets), validation des jetons + provisioning JIT + rôles DB.
+Voir la section *Authentification* ci-dessus.
 
 **Non encore implémenté** (hors périmètre de cette itération) :
 - **Loi 25** : `GET /me/export`, `DELETE /me` (anonymisation), registre de consentement.

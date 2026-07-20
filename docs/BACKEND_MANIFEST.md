@@ -1,16 +1,16 @@
-# EventHub — Manifeste Backend
+# EventHub, Manifeste Backend
 
 > Spécification de tout ce que le serveur doit fournir pour l'app Flutter `ca.uqtr.eventhub`.
 > Dérivé des entités et écrans réellement présents dans l'app, + les manques à prévoir.
 
 - **Public** : étudiants/personnel UQTR (auth par courriel `@uqtr.ca`).
 - **Stack recommandée** : PostgreSQL + API REST (Node/NestJS, Django/DRF ou Laravel), stockage objet S3-compatible (+ CDN), Redis (cache/queues), service de push (FCM/APNs).
-- **Conventions API** : `https://api.eventhub.uqtr.ca/v1`, JSON en **`camelCase`** (⚠️ pas `snake_case` — les colonnes BD `snake_case` sont mappées en `camelCase` dans les réponses), dates **ISO‑8601 UTC**, auth `Authorization: Bearer <JWT>`, pagination `?page=&limit=` (réponse `{ data, meta:{ page, limit, total } }`), erreurs `{ error:{ code, message, details } }`.
-- **Contrat figé côté app** : les modèles Flutter (`*.fromJson`) attendent déjà des payloads précis — voir §3.0. Toute divergence de nommage casse le parsing.
+- **Conventions API** : `https://api.eventhub.uqtr.ca/v1`, JSON en **`camelCase`** (⚠️ pas `snake_case`, les colonnes BD `snake_case` sont mappées en `camelCase` dans les réponses), dates **ISO‑8601 UTC**, auth `Authorization: Bearer <JWT>`, pagination `?page=&limit=` (réponse `{ data, meta:{ page, limit, total } }`), erreurs `{ error:{ code, message, details } }`.
+- **Contrat figé côté app** : les modèles Flutter (`*.fromJson`) attendent déjà des payloads précis, voir §3.0. Toute divergence de nommage casse le parsing.
 
 ---
 
-## 1. Authentification & autorisation — **Microsoft Entra ID (Azure AD)**
+## 1. Authentification & autorisation, **Microsoft Entra ID (Azure AD)**
 
 L'authentification se fait **exclusivement via le compte Microsoft 365 de l'UQTR** (Microsoft Entra ID / Azure AD), en **OAuth 2.0 / OpenID Connect**. Aucun mot de passe n'est stocké par EventHub.
 
@@ -20,7 +20,7 @@ L'authentification se fait **exclusivement via le compte Microsoft 365 de l'UQTR
 | Restriction | Seuls les comptes du tenant UQTR (domaine `@uqtr.ca`) sont acceptés ; les invités/externes sont rejetés. |
 | Échange | L'app obtient un **id_token Microsoft** → l'envoie au backend → le backend le **valide** (signature JWKS Microsoft, `aud`, `iss`, `tid` = tenant UQTR) → émet ses **propres JWT** (access ~15 min + refresh ~30 j). |
 | Provisionnement | Création/MAJ automatique du `user` au premier login (nom, courriel, `oid` Microsoft, avatar via Microsoft Graph). |
-| Rôles | `student` (défaut), `organizer`, `moderator`, `admin` — gérés dans EventHub (ou mappés depuis des **groupes Entra**). |
+| Rôles | `student` (défaut), `organizer`, `moderator`, `admin`, gérés dans EventHub (ou mappés depuis des **groupes Entra**). |
 | Sécurité | Validation stricte du token Microsoft, révocation refresh token, journal de connexions, déconnexion globale. |
 
 ```
@@ -36,7 +36,7 @@ GET  /auth/me               -> profil courant complet
 
 ---
 
-## 2. Modèle de données (schémas BD — PostgreSQL)
+## 2. Modèle de données (schémas BD, PostgreSQL)
 
 > `currentParticipants`, `totalHearts`, `likesCount`, niveaux… **ne sont pas stockés en dur** : ce sont des agrégats calculés (vues ou compteurs maintenus). L'app les reçoit déjà calculés.
 
@@ -172,13 +172,13 @@ CREATE TABLE app_stats (       -- '1.2k inscrits', total UQTR cœurs (cache)
 
 ---
 
-## 3. API REST — toutes les routes
+## 3. API REST, toutes les routes
 
 ### 3.0 Contrats JSON figés par l'app (⚠️ à respecter)
 
 L'app est déjà « API-ready » : ses modèles désérialisent des payloads **précis**. Le backend doit produire **exactement** ces formes (nommage `camelCase`, `organizer` = **chaîne**, `category` = **slug**, dates ISO‑8601, cœurs sous `heartsReward`).
 
-**Activity** (`GET /activities`, `/activities/featured`, `/activities/:id`) — tel que parsé par `ActivityModel.fromJson` :
+**Activity** (`GET /activities`, `/activities/featured`, `/activities/:id`), tel que parsé par `ActivityModel.fromJson` :
 ```json
 {
   "id": "act003",
@@ -197,9 +197,9 @@ L'app est déjà « API-ready » : ses modèles désérialisent des payloads **p
 }
 ```
 
-**À aligner (au choix backend, mais à décider) :** `Post` et `UserProfile` n'ont pas encore de `fromJson` figé côté app — leur contrat reste **ouvert**. Champs attendus par l'UI :
+**À aligner (au choix backend, mais à décider) :** `Post` et `UserProfile` n'ont pas encore de `fromJson` figé côté app, leur contrat reste **ouvert**. Champs attendus par l'UI :
 - **Post** : `id, authorName, authorAvatarUrl, imageUrl, caption, activityName, createdAt, likesCount, comments[]` (chaque commentaire : `authorName, text, createdAt`).
-- **UserProfile** (`GET /me`) : `id, name, email, avatarUrl, totalHearts, completedActivityIds[], heartHistory[]` (chaque entrée : `activityTitle, hearts, date`). Le **niveau** (Bronze/Argent/Or) et les seuils sont **calculés côté app** — inutile de les renvoyer, mais rester cohérent avec §2.
+- **UserProfile** (`GET /me`) : `id, name, email, avatarUrl, totalHearts, completedActivityIds[], heartHistory[]` (chaque entrée : `activityTitle, hearts, date`). Le **niveau** (Bronze/Argent/Or) et les seuils sont **calculés côté app**, inutile de les renvoyer, mais rester cohérent avec §2.
 
 ### 3.1 Application mobile
 
@@ -220,7 +220,7 @@ GET   /me/notification-settings ; PATCH /me/notification-settings
 ```
 GET /activities                 ?category=&q=&availableOnly=&from=&to=&page=&limit=&sort=
                                  -> liste filtrée (recherche titre/lieu, intervalle de dates,
-                                    places dispo) — alimente Catalogue & "Activités à venir"
+                                    places dispo), alimente Catalogue & "Activités à venir"
 GET /activities/featured        -> 3 activités du carrousel "à la une"
 GET /activities/:id             -> détail complet (+ spotsLeft, isRegistered, deadlinePassed)
 GET /categories                 -> chips de catégories
@@ -311,7 +311,7 @@ GET   /admin/exports/registrations.csv
 
 ---
 
-## 6. ⚠️ Point délicat — Intégration Google Forms
+## 6. ⚠️ Point délicat, Intégration Google Forms
 
 L'app ouvre un **Google Form** en WebView et détecte la soumission via l'URL (`formResponse`). C'est **fragile** : la vraie inscription vit chez Google, pas chez vous. À cadrer côté backend :
 
@@ -322,7 +322,7 @@ L'app ouvre un **Google Form** en WebView et détecte la soumission via l'URL (`
 
 ## 7. Ce qui manquait (ajouté ici)
 
-- **Authentification réelle via Microsoft Entra ID** (OAuth2/OIDC, refresh tokens) — absente du prototype (l'app charge un utilisateur fictif).
+- **Authentification réelle via Microsoft Entra ID** (OAuth2/OIDC, refresh tokens), absente du prototype (l'app charge un utilisateur fictif).
 - **Catégories & organisateurs** en base (codés en dur dans l'app).
 - **Liste d'attente** : mentionnée dans l'UI (« liste d'attente disponible ») mais aucune logique.
 - **Attribution des cœurs** : *quand/comment* sont-ils crédités ? → via **présence confirmée**, pas la simple inscription. À définir (check-in QR ? validation organisateur ?).

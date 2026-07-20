@@ -1,4 +1,4 @@
-# EventHub — Manifeste de l'application mobile
+# EventHub, Manifeste de l'application mobile
 
 > Description fonctionnelle et technique de l'app Flutter `ca.uqtr.eventhub`.
 > Compagnon de [BACKEND_MANIFEST.md](BACKEND_MANIFEST.md).
@@ -12,7 +12,7 @@ EventHub est l'application **mobile UQTR** qui réunit en un seul endroit les **
 - **Plateformes** : iOS & Android (Flutter, un seul code).
 - **Identifiant app** : `ca.uqtr.eventhub`.
 - **Langue** : français (Québec).
-- **Authentification** : compte **Microsoft 365 UQTR** (Entra ID) — voir backend §1.
+- **Authentification** : compte **Microsoft 365 UQTR** (Entra ID), voir backend §1.
 
 ---
 
@@ -21,9 +21,9 @@ EventHub est l'application **mobile UQTR** qui réunit en un seul endroit les **
 | Domaine | Choix |
 |---|---|
 | Framework | Flutter 3.x / Dart 3 |
-| Gestion d'état | **Riverpod** (`flutter_riverpod`) — `Notifier`/`Provider` |
+| Gestion d'état | **Riverpod** (`flutter_riverpod`), `Notifier`/`Provider` |
 | Navigation | **go_router** (`StatefulShellRoute` pour la barre d'onglets) |
-| Réseau (à venir) | `dio`/`http` + couche `repository` (déjà en place, sources locales aujourd'hui) |
+| Réseau | `dio` + couche `repository` (branché à l'API réelle ; repli mock sans config Entra) |
 | Images | `cached_network_image` |
 | Icônes | **Iconsax** (`iconsax_flutter`) |
 | WebView | `webview_flutter` (formulaires d'inscription) |
@@ -31,7 +31,7 @@ EventHub est l'application **mobile UQTR** qui réunit en un seul endroit les **
 | Sélection photo | `image_picker` |
 | Carrousel | `smooth_page_indicator` + `PageView` |
 
-**Architecture** : *Clean Architecture* par fonctionnalité —
+**Architecture** : *Clean Architecture* par fonctionnalité,
 `feature/{data: datasources, models, repositories | domain: entities, repositories | presentation: pages, widgets, providers}`.
 
 ---
@@ -47,9 +47,9 @@ EventHub est l'application **mobile UQTR** qui réunit en un seul endroit les **
 | **PostComment** | authorName, text, createdAt |
 
 **État applicatif (Riverpod)** :
-- `activityFilterProvider` (NotifierProvider) — filtres catalogue centralisés.
-- `registeredActivitiesProvider` (Notifier) — inscriptions : `register/unregister/toggle/isRegistered`.
-- `likedPostsProvider` (Notifier) — likes : `toggle/isLiked`.
+- `activityFilterProvider` (NotifierProvider), filtres catalogue centralisés.
+- `registeredActivitiesProvider` (Notifier), inscriptions : `register/unregister/toggle/isRegistered`.
+- `likedPostsProvider` (Notifier), likes : `toggle/isLiked`.
 - `filteredActivitiesProvider`, `hasActiveFiltersProvider`, `catalogueSearchProvider`, `avatarUrlProvider`…
 
 ---
@@ -58,17 +58,17 @@ EventHub est l'application **mobile UQTR** qui réunit en un seul endroit les **
 
 | Route | Écran | Onglet ? |
 |---|---|---|
-| `/splash` | Démarrage / vérif. session | — |
-| `/login` | Connexion Microsoft UQTR | — |
+| `/splash` | Démarrage / vérif. session |, |
+| `/login` | Connexion Microsoft UQTR |, |
 | `/home` | **Accueil** | Onglet 1 |
 | `/catalogue` | **Catalogue** (liste + recherche + filtres) | Onglet 2 |
 | `/profile` | **Profil** | Onglet 3 |
-| `/activity/:id` | Détail d'une activité | — |
-| `/activity/:id/register?url=` | WebView formulaire d'inscription | — |
-| `/activity/:id/confirmation` | Confirmation d'inscription (animation) | — |
-| `/post/:id` | Détail d'une publication | — |
-| `/create-post` | Publier une photo | — |
-| `/hearts` | Cœurs santé (niveaux + classement + historique) | — |
+| `/activity/:id` | Détail d'une activité |, |
+| `/activity/:id/register?url=` | WebView formulaire d'inscription |, |
+| `/activity/:id/confirmation` | Confirmation d'inscription (animation) |, |
+| `/post/:id` | Détail d'une publication |, |
+| `/create-post` | Publier une photo |, |
+| `/hearts` | Cœurs santé (niveaux + classement + historique) |, |
 
 Barre de navigation **flottante façon Apple Music** (verre dépoli, onglet actif avec libellé).
 
@@ -98,12 +98,12 @@ Barre de navigation **flottante façon Apple Music** (verre dépoli, onglet acti
 ### 5.4 Détail d'activité (`/activity/:id`)
 - Image, catégorie, titre, **récompense en cœurs**, date, heure, lieu, organisateur.
 - **Date limite d'inscription** (rouge si dépassée).
-- **Indicateur de places** + « Complet — liste d'attente disponible ».
+- **Indicateur de places** + « Complet, liste d'attente disponible ».
 - **Bouton Partager** (`share_plus`).
 - **Bouton S'inscrire** : ouvre le formulaire **en WebView** (reste dans l'app) ; désactivé si complet ou échéance passée.
 
 ### 5.5 Inscription (WebView + confirmation)
-- `/activity/:id/register` : WebView du formulaire (Google Form aujourd'hui — voir backend §6) ; **détecte la soumission** → bouton « J'ai soumis le formulaire ».
+- `/activity/:id/register` : WebView du formulaire (Google Form aujourd'hui, voir backend §6) ; **détecte la soumission** → bouton « J'ai soumis le formulaire ».
 - `/activity/:id/confirmation` : animation de succès, marque l'activité comme **inscrite** (`registeredActivitiesProvider`).
 
 ### 5.6 Social (Fil / Détail / Publier)
@@ -123,7 +123,7 @@ Barre de navigation **flottante façon Apple Music** (verre dépoli, onglet acti
 
 ---
 
-## 6. Gamification — « cœurs santé »
+## 6. Gamification, « cœurs santé »
 
 - Chaque activité rapporte un nombre de **cœurs** (`hearts`).
 - Cumul → **niveaux** : Bronze (<200), Argent (≥200), Or (≥500), seuil suivant à 1000.
@@ -131,17 +131,13 @@ Barre de navigation **flottante façon Apple Music** (verre dépoli, onglet acti
 
 ---
 
-## 7. Branchement à l'API (état actuel → cible)
+## 7. Branchement à l'API : RÉALISÉ
 
-| Aujourd'hui | Cible |
-|---|---|
-| Données **locales** (`*_local_datasource.dart`) | Appels API REST (backend §3) |
-| Utilisateur **fictif** (`Alex Tremblay`) | Profil réel via **login Microsoft** + `GET /me` |
-| Inscription détectée par l'URL WebView | `POST /activities/:id/register` (idéalement formulaire natif) |
-| Likes/inscriptions **en mémoire** (Riverpod) | Persistés via API, rechargés au login |
-| Stats « 1.2k inscrits » **codées en dur** | `GET /stats/community` |
-
-> La couche `repository` existe déjà : il suffira de remplacer les `LocalDataSource` par des `RemoteDataSource` sans toucher à la présentation.
+L'app est **branchée au backend réel** : login Microsoft Entra (PKCE + refresh
+silencieux), catalogue/filtres serveur, inscriptions et annulations persistées,
+profil et avatar réels, classement, stats communautaires, fil social, page
+« À propos », auto-émargement par QR. Le **mode mock** subsiste comme démo
+hors-ligne quand la config Entra n'est pas fournie (voir mobile/README.md).
 
 ---
 
