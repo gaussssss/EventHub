@@ -1,3 +1,4 @@
+import '../../../../core/utils/media_url.dart';
 import '../../domain/entities/leaderboard_entry.dart';
 
 class LeaderboardEntryModel extends LeaderboardEntry {
@@ -14,7 +15,7 @@ class LeaderboardEntryModel extends LeaderboardEntry {
     return LeaderboardEntryModel(
       rank: (json['rank'] ?? 0) as int,
       name: (json['name'] ?? 'Anonyme') as String,
-      avatarUrl: json['avatarUrl'] as String?,
+      avatarUrl: resolveMediaUrl(json['avatarUrl'] as String?),
       hearts: (json['hearts'] ?? 0) as int,
       isMe: (json['isMe'] ?? false) as bool,
     );

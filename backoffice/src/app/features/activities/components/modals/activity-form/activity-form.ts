@@ -37,10 +37,30 @@ export class ActivityFormModal {
   readonly imageUrl = signal('');
   readonly heartsReward = signal(0);
   readonly maxParticipants = signal(0);
+  readonly participationCost = signal(0);
   readonly registrationUrl = signal('');
   readonly registrationDeadline = signal('');
   readonly isFeatured = signal(false);
   readonly status = signal('draft');
+
+  /** Passe à true au 1er blur / tentative de soumission (affichage des erreurs). */
+  readonly urlTouched = signal(false);
+
+  /** Message d'erreur du lien d'inscription (obligatoire + format URL), ou null. */
+  readonly registrationUrlError = computed(() => {
+    const v = this.registrationUrl().trim();
+    if (!v) return "Le lien d'inscription est obligatoire.";
+    let url: URL;
+    try {
+      url = new URL(v);
+    } catch {
+      return 'Adresse URL invalide (ex. https://…).';
+    }
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return "L'URL doit commencer par http:// ou https://.";
+    }
+    return null;
+  });
 
   constructor() {
     // À l'ouverture : charge les référentiels, puis réinitialise (création) ou
@@ -71,6 +91,7 @@ export class ActivityFormModal {
       this.imageUrl.set(detail.imageUrl);
       this.heartsReward.set(detail.heartsReward);
       this.maxParticipants.set(detail.maxParticipants);
+      this.participationCost.set(detail.participationCost ?? 0);
       this.registrationUrl.set(detail.registrationUrl ?? '');
       this.registrationDeadline.set(this.toInput(detail.registrationDeadline));
       this.isFeatured.set(detail.isFeatured);
@@ -79,6 +100,10 @@ export class ActivityFormModal {
   }
 
   submit(): void {
+    // Le lien d'inscription est obligatoire et doit être une URL valide.
+    this.urlTouched.set(true);
+    if (this.registrationUrlError()) return;
+
     this.save.handler(
       this.data()?.id ?? null,
       {
@@ -92,7 +117,8 @@ export class ActivityFormModal {
         imageUrl: this.imageUrl().trim(),
         heartsReward: Number(this.heartsReward()) || 0,
         maxParticipants: Number(this.maxParticipants()) || 0,
-        registrationUrl: this.registrationUrl().trim() || null,
+        participationCost: Number(this.participationCost()) || 0,
+        registrationUrl: this.registrationUrl().trim(),
         registrationDeadline: this.registrationDeadline() || null,
         isFeatured: this.isFeatured(),
         status: this.status(),
@@ -122,9 +148,11 @@ export class ActivityFormModal {
     this.imageUrl.set('');
     this.heartsReward.set(0);
     this.maxParticipants.set(0);
+    this.participationCost.set(0);
     this.registrationUrl.set('');
     this.registrationDeadline.set('');
     this.isFeatured.set(false);
     this.status.set('draft');
+    this.urlTouched.set(false);
   }
 }

@@ -69,25 +69,29 @@ export class AuthService {
     this._account.set(account);
   }
 
-  /** Ouvre la fenêtre de connexion Microsoft (popup). */
+  /**
+   * Lance la connexion Microsoft par **redirection pleine page** (et non popup).
+   * La page quitte vers Microsoft puis revient sur `redirectUri` ; au retour,
+   * `initialize()` → `handleRedirectPromise()` récupère le compte. La redirection
+   * évite les blocages de popup (Safari/ITP, extensions, bloqueurs) qui laissaient
+   * la fenêtre sur `about:blank`. La promesse ne se résout pas ici : la page se
+   * décharge pendant la navigation.
+   */
   async login(): Promise<void> {
     if (!this.msal) {
       throw new Error("Microsoft Entra n'est pas configuré (clientId SPA manquant).");
     }
-    const result = await this.msal.loginPopup({ scopes: this.loginScopes });
-    this.msal.setActiveAccount(result.account);
-    this._account.set(result.account);
+    await this.msal.loginRedirect({ scopes: this.loginScopes });
   }
 
-  /** Déconnexion (popup) + purge de la session locale. */
+  /** Déconnexion par redirection + purge de la session locale. */
   async logout(): Promise<void> {
     if (!this.msal) {
       this._account.set(null);
       return;
     }
     const account = this.msal.getActiveAccount() ?? undefined;
-    await this.msal.logoutPopup({ account });
-    this._account.set(null);
+    await this.msal.logoutRedirect({ account });
   }
 
   /**
@@ -105,11 +109,10 @@ export class AuthService {
       const res = await this.msal.acquireTokenSilent({ scopes, account });
       return res.accessToken;
     } catch (err) {
+      // Consentement/interaction requis : on repasse par une redirection (pas de
+      // popup) pour rester cohérent avec le flux de connexion.
       if (err instanceof InteractionRequiredAuthError) {
-        const res = await this.msal.acquireTokenPopup({ scopes });
-        this.msal.setActiveAccount(res.account);
-        this._account.set(res.account);
-        return res.accessToken;
+        await this.msal.acquireTokenRedirect({ scopes, account });
       }
       return null;
     }

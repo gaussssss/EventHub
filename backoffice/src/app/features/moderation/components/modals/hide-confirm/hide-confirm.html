@@ -15,7 +15,7 @@
         <div class="px-6 py-4 overflow-y-auto flex flex-col gap-3">
           @if (d.imageUrl) {
             <img
-              [src]="d.imageUrl"
+              [src]="mediaUrl(d.imageUrl)"
               alt="contenu signalé"
               class="w-full max-h-72 object-cover rounded-[var(--az-radius)] border border-base-300" />
           }

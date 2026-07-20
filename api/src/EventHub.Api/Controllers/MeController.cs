@@ -77,21 +77,32 @@ public class MeController : ControllerBase
         return Ok(profile);
     }
 
-    /// <summary>Modifier la photo de profil (POST /api/me/avatar), multipart « file ».</summary>
+    public sealed record UpdateAvatarBody(string AvatarUrl);
+
+    /// <summary>
+    /// Enregistrer la photo de profil (POST /api/me/avatar). Le fichier a d'abord
+    /// été envoyé via POST /api/uploads/image, qui renvoie un chemin ; on persiste
+    /// ce chemin ici. On accepte un chemin relatif (<c>/uploads/…</c>) ou une URL
+    /// http(s) absolue (avatar externe).
+    /// </summary>
     [HttpPost("avatar")]
     public async Task<IActionResult> UpdateAvatar(
-        IFormFile? file, CancellationToken cancellationToken)
+        [FromBody] UpdateAvatarBody body, CancellationToken cancellationToken)
     {
         var userId = _currentUser.UserId;
         if (userId is null)
             return Unauthorized();
-        if (file is null || file.Length == 0)
-            return BadRequest(new { error = "fichier requis" });
-        if (!file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
-            return BadRequest(new { error = "type de fichier non supporté (image attendue)" });
+
+        var avatarUrl = body.AvatarUrl?.Trim();
+        if (string.IsNullOrEmpty(avatarUrl))
+            return BadRequest(new { error = "avatarUrl requis" });
+        if (!avatarUrl.StartsWith("/uploads/", StringComparison.Ordinal) &&
+            !avatarUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+            !avatarUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { error = "avatarUrl invalide" });
 
         var result = await _sender.Send(
-            new UpdateAvatarCommand(userId.Value, file.ContentType), cancellationToken);
+            new UpdateAvatarCommand(userId.Value, avatarUrl), cancellationToken);
         return result.Updated
             ? Ok(new { avatarUrl = result.AvatarUrl })
             : NotFound();

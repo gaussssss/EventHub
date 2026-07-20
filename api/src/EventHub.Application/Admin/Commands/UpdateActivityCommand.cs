@@ -18,4 +18,5 @@ public sealed record UpdateActivityCommand(
     string? RegistrationUrl,
     DateTime? RegistrationDeadline,
     bool IsFeatured,
-    ActivityStatus Status) : ICommand<UpdateActivityStatus>;
+    ActivityStatus Status,
+    decimal ParticipationCost = 0m) : ICommand<UpdateActivityStatus>;

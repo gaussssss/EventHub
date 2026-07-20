@@ -18,8 +18,12 @@ public sealed record AdminActivityDetailDto
     public required string ImageUrl { get; init; }
     public int HeartsReward { get; init; }
     public int MaxParticipants { get; init; }
+    public decimal ParticipationCost { get; init; }
     public string? RegistrationUrl { get; init; }
     public DateTime? RegistrationDeadline { get; init; }
     public bool IsFeatured { get; init; }
     public required string Status { get; init; }
+
+    /// <summary>Jeton d'émargement (admin uniquement) : encodé dans le QR de présence.</summary>
+    public Guid CheckInToken { get; init; }
 }

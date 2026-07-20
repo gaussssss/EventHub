@@ -176,7 +176,7 @@ class ActivityLocalDataSource {
       categoryLabel: 'Socioculturel',
       date: DateTime(2026, 7, 25, 11, 0),
       registrationDeadline: DateTime(2026, 7, 22, 23, 59),
-      location: 'Campus UQTR — Aire commune',
+      location: 'Campus UQTR, Aire commune',
       organizer: 'Bureau international UQTR',
       imageUrl:
           'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&fit=crop&q=80',

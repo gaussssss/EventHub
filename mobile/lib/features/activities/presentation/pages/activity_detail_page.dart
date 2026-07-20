@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
@@ -167,6 +164,13 @@ class ActivityDetailPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 20),
                   _InfoRow(
+                    icon: Iconsax.dollar_circle,
+                    label: activity.participationCost <= 0
+                        ? 'Participation gratuite'
+                        : 'Coût de participation : ${activity.participationCost.toStringAsFixed(0)} \$',
+                  ),
+                  const SizedBox(height: 10),
+                  _InfoRow(
                     icon: Iconsax.calendar,
                     label: DateFormatter.dateFull(activity.date),
                   ),
@@ -194,6 +198,60 @@ class ActivityDetailPage extends ConsumerWidget {
                       color: deadlinePassed
                           ? AppColors.heart
                           : AppColors.secondary,
+                    ),
+                  ],
+                  // Inscrit mais présence pas encore confirmée : les cœurs sont
+                  // crédités au pointage (scan du QR sur place, ou back office).
+                  if (isRegistered) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Iconsax.info_circle,
+                              color: AppColors.secondary, size: 18),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Vos points seront attribués après confirmation de présence.',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.secondary,
+                                fontWeight: FontWeight.w500,
+                                height: 1.3,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Émargement sur place : scanner le QR affiché par
+                    // l'organisateur confirme la présence (fenêtre horaire
+                    // validée côté serveur).
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: OutlinedButton.icon(
+                        onPressed: () => context.push('/scan'),
+                        icon: const Icon(Iconsax.scan_barcode, size: 20),
+                        label: const Text(
+                          'Scanner ma présence',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w600),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(color: AppColors.primary),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
+                        ),
+                      ),
                     ),
                   ],
                   const SizedBox(height: 20),
@@ -257,7 +315,7 @@ class ActivityDetailPage extends ConsumerWidget {
                   const SizedBox(height: 6),
                   Text(
                     isFull
-                        ? 'Complet — liste d\'attente disponible'
+                        ? 'Complet, liste d\'attente disponible'
                         : '$spotsLeft place${spotsLeft > 1 ? 's' : ''} restante${spotsLeft > 1 ? 's' : ''}',
                     style: TextStyle(
                       fontSize: 12,
@@ -332,29 +390,17 @@ class ActivityDetailPage extends ConsumerWidget {
     }
   }
 
-  Future<void> _shareActivity(Activity activity) async {
+  void _shareActivity(Activity activity) {
+    // Partage texte + lien de l'événement. (On n'attache PAS d'image : cela
+    // ferait basculer iOS en « partage de document » avec des actions Save
+    // Image / Print. Un vrai aperçu riche viendra avec la page web + OpenGraph.)
     final link = '${AppConfig.shareBaseUrl}/activities/${activity.id}';
-    final text = '🎉 ${activity.title}\n'
-        '📅 ${DateFormatter.dateFull(activity.date)} à ${DateFormatter.time(activity.date)}\n'
-        '📍 ${activity.location}\n\n'
-        'Découvre cet événement sur EventHub UQTR !\n$link';
-
-    // Joint le logo EventHub pour que l'aperçu de la feuille de partage soit
-    // marqué (iOS n'affiche pas d'icône d'app pour un partage texte seul).
-    XFile? logo;
-    try {
-      final bytes = await rootBundle.load('assets/icon/app_icon.png');
-      final file = File('${Directory.systemTemp.path}/eventhub_logo.png');
-      await file.writeAsBytes(bytes.buffer.asUint8List(), flush: true);
-      logo = XFile(file.path, mimeType: 'image/png');
-    } catch (_) {
-      logo = null; // en cas d'échec, on partage le texte seul
-    }
-
-    await SharePlus.instance.share(ShareParams(
-      text: text,
+    SharePlus.instance.share(ShareParams(
+      text: '🎉 ${activity.title}\n'
+          '📅 ${DateFormatter.dateFull(activity.date)} à ${DateFormatter.time(activity.date)}\n'
+          '📍 ${activity.location}\n\n'
+          'Découvre cet événement sur UQTR en santé !\n$link',
       subject: activity.title,
-      files: logo == null ? null : [logo],
     ));
   }
 }

@@ -1,3 +1,4 @@
+import '../../../../core/utils/media_url.dart';
 import '../../domain/entities/post.dart';
 
 class PostModel extends Post {
@@ -18,8 +19,8 @@ class PostModel extends Post {
     return PostModel(
       id: json['id'] as String,
       authorName: (json['authorName'] ?? '') as String,
-      authorAvatarUrl: (json['authorAvatarUrl'] ?? '') as String,
-      imageUrl: json['imageUrl'] as String,
+      authorAvatarUrl: resolveMediaUrl(json['authorAvatarUrl'] as String?),
+      imageUrl: resolveMediaUrl(json['imageUrl'] as String?),
       caption: json['caption'] as String,
       activityName: (json['activityName'] ?? '') as String,
       createdAt: DateTime.parse(json['createdAt'] as String).toLocal(),

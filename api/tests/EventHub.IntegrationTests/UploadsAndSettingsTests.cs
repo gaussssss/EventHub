@@ -38,16 +38,15 @@ public class UploadsAndSettingsTests : IClassFixture<EventHubApiFactory>
         var client = _factory.CreateClient();
         client.DefaultRequestHeaders.Add("X-User-Id", userId.ToString());
 
-        using var content = new MultipartFormDataContent();
-        var bytes = Encoding.UTF8.GetBytes("fake-image-bytes");
-        var fileContent = new ByteArrayContent(bytes);
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
-        content.Add(fileContent, "file", "avatar.png");
-
-        var response = await client.PostAsync("/api/me/avatar", content);
+        // Le fichier est d'abord uploadé (POST /api/uploads/image) puis son chemin
+        // relatif est enregistré sur le profil (POST /api/me/avatar) — on persiste
+        // le chemin tel quel, sans nom de domaine.
+        const string avatarPath = "/uploads/abc123.png";
+        var response = await client.PostAsJsonAsync(
+            "/api/me/avatar", new { avatarUrl = avatarPath });
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var payload = await response.Content.ReadFromJsonAsync<AvatarRow>();
-        payload!.AvatarUrl.Should().Contain("/avatars/");
+        payload!.AvatarUrl.Should().Be(avatarPath);
     }
 
     [Fact]

@@ -73,6 +73,17 @@
             [ngModel]="maxParticipants()" (ngModelChange)="maxParticipants.set($event)" />
         </div>
 
+        <div>
+          <label class="block text-sm font-medium mb-1">Coût de participation</label>
+          <select class="select select-bordered w-full"
+            [ngModel]="participationCost()" (ngModelChange)="participationCost.set(+$event)">
+            <option [value]="0">Gratuit</option>
+            <option [value]="10">10 $</option>
+            <option [value]="20">20 $</option>
+          </select>
+          <p class="text-xs text-base-content/40 mt-1">Informatif (non facturé).</p>
+        </div>
+
         <div class="sm:col-span-2">
           <label class="block text-sm font-medium mb-1">Image (URL) *</label>
           <input type="text" class="input input-bordered w-full" placeholder="https://…"
@@ -80,9 +91,14 @@
         </div>
 
         <div class="sm:col-span-2">
-          <label class="block text-sm font-medium mb-1">Lien d'inscription (Google Form)</label>
-          <input type="text" class="input input-bordered w-full" placeholder="https://forms.gle/…"
-            [ngModel]="registrationUrl()" (ngModelChange)="registrationUrl.set($event)" />
+          <label class="block text-sm font-medium mb-1">Lien d'inscription (URL) *</label>
+          <input type="url" class="input input-bordered w-full" placeholder="https://…"
+            [class.input-error]="urlTouched() && registrationUrlError()"
+            [ngModel]="registrationUrl()" (ngModelChange)="registrationUrl.set($event)"
+            (blur)="urlTouched.set(true)" />
+          @if (urlTouched() && registrationUrlError()) {
+            <p class="text-xs text-error mt-1">{{ registrationUrlError() }}</p>
+          }
         </div>
 
         <div>

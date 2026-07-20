@@ -1,7 +1,7 @@
 <div class="flex flex-col gap-5">
   <div>
     <h1 class="text-2xl font-semibold">Paramètres</h1>
-    <p class="text-sm text-base-content/60 mt-0.5">Gamification — seuils de niveaux et récompenses.</p>
+    <p class="text-sm text-base-content/60 mt-0.5">Gamification, seuils de niveaux et récompenses.</p>
   </div>
 
   <!-- Chargement -->
@@ -33,17 +33,10 @@
         </div>
       </div>
 
-      <div class="divider my-5"></div>
-
-      <h2 class="text-base font-semibold mb-4">Récompense</h2>
-      <div class="max-w-xs">
-        <label class="block text-sm font-medium mb-1">Cœurs par présence (défaut)</label>
-        <input type="number" min="0" class="input input-bordered w-full"
-          [ngModel]="reward()" (ngModelChange)="reward.set($event)" />
-        <p class="text-xs text-base-content/40 mt-1">
-          Attribués quand une présence est confirmée, sauf récompense propre à l'activité.
-        </p>
-      </div>
+      <p class="text-xs text-base-content/50 mt-4">
+        Les cœurs attribués sont définis par activité (champ « récompense » du formulaire d'activité)
+        et crédités après confirmation de présence.
+      </p>
 
       <div class="mt-6 flex justify-end">
         <button class="btn btn-primary btn-sm gap-1" [disabled]="save.isSaving()" (click)="submit()">
@@ -55,4 +48,61 @@
       </div>
     </div>
   }
+
+  <!-- Contributeurs de la page « À propos » (app mobile) -->
+  <div class="bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)] p-6 max-w-3xl">
+    <div class="flex items-center justify-between mb-1">
+      <h2 class="text-base font-semibold">Contributeurs, page « À propos »</h2>
+      <button class="btn btn-outline btn-sm gap-1" (click)="contributors.addRow()">
+        <span class="icon-[fluent--add-24-regular]"></span>
+        Ajouter
+      </button>
+    </div>
+    <p class="text-xs text-base-content/50 mb-4">
+      Affichés dans l'app mobile (Profil → À propos), triés par ordre croissant.
+    </p>
+
+    @if (contributors.isLoading()) {
+      <div class="flex justify-center py-8">
+        <span class="loading loading-spinner loading-md text-primary"></span>
+      </div>
+    } @else if (contributors.rows().length === 0) {
+      <p class="text-sm text-base-content/40 py-4">Aucun contributeur pour le moment.</p>
+    } @else {
+      <div class="flex flex-col gap-2">
+        <div class="hidden sm:grid grid-cols-[3.5rem_1fr_1fr_1fr_2.5rem] gap-2 text-xs text-base-content/50 px-1">
+          <span>Ordre</span><span>Nom</span><span>Rôle</span><span>Avatar (URL)</span><span></span>
+        </div>
+        @for (row of contributors.rows(); track $index) {
+          <div class="grid grid-cols-1 sm:grid-cols-[3.5rem_1fr_1fr_1fr_2.5rem] gap-2 items-center">
+            <input type="number" class="input input-bordered input-sm w-full"
+              [ngModel]="row.sortOrder"
+              (ngModelChange)="contributors.updateRow($index, { sortOrder: +$event })" />
+            <input type="text" class="input input-bordered input-sm w-full" placeholder="Nom *"
+              [ngModel]="row.name"
+              (ngModelChange)="contributors.updateRow($index, { name: $event })" />
+            <input type="text" class="input input-bordered input-sm w-full" placeholder="Rôle *"
+              [ngModel]="row.role"
+              (ngModelChange)="contributors.updateRow($index, { role: $event })" />
+            <input type="url" class="input input-bordered input-sm w-full" placeholder="https://… (optionnel)"
+              [ngModel]="row.avatarUrl"
+              (ngModelChange)="contributors.updateRow($index, { avatarUrl: $event })" />
+            <button class="btn btn-ghost btn-sm btn-square text-error"
+              title="Supprimer" (click)="contributors.removeRow($index)">
+              <span class="icon-[fluent--delete-24-regular]"></span>
+            </button>
+          </div>
+        }
+      </div>
+      <div class="mt-4 flex justify-end">
+        <button class="btn btn-primary btn-sm gap-1"
+          [disabled]="contributors.isSaving()" (click)="contributors.saveAll()">
+          @if (contributors.isSaving()) {
+            <span class="loading loading-spinner loading-xs"></span>
+          }
+          Enregistrer les contributeurs
+        </button>
+      </div>
+    }
+  </div>
 </div>

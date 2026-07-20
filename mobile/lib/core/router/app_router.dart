@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/about/presentation/pages/about_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/activities/presentation/pages/activity_detail_page.dart';
 import '../../features/activities/presentation/pages/catalogue_page.dart';
+import '../../features/activities/presentation/pages/check_in_scanner_page.dart';
 import '../../features/activities/presentation/pages/registration_confirmation_page.dart';
 import '../../features/activities/presentation/pages/registration_webview_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
@@ -44,6 +46,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           url: Uri.decodeComponent(
               state.uri.queryParameters['url'] ?? ''),
         ),
+      ),
+      GoRoute(
+        path: '/scan',
+        builder: (context, state) => const CheckInScannerPage(),
+      ),
+      GoRoute(
+        path: '/about',
+        builder: (context, state) => const AboutPage(),
       ),
       GoRoute(
         path: '/post/:id',

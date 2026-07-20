@@ -137,11 +137,25 @@ class HeartStatCard extends StatelessWidget {
                 const Icon(Iconsax.people,
                     color: Colors.white70, size: 16),
                 const SizedBox(width: 6),
-                Text(
-                  'Total UQTR : $uqtrHearts cœurs',
-                  style: const TextStyle(
-                      color: Colors.white70, fontSize: 13),
+                Expanded(
+                  child: Text(
+                    'Total UQTR : $uqtrHearts cœurs',
+                    style: const TextStyle(
+                        color: Colors.white70, fontSize: 13),
+                  ),
                 ),
+                // Indice d'affordance : signale que la carte est cliquable
+                // (mène au détail des cœurs / classement).
+                const Text(
+                  'Détails',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Icon(Icons.chevron_right,
+                    color: Colors.white, size: 20),
               ],
             ),
           ],

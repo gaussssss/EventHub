@@ -19,7 +19,15 @@ public sealed record ActivityDto
     public int HeartsReward { get; init; }
     public int MaxParticipants { get; init; }
     public int CurrentParticipants { get; init; }
+    public decimal ParticipationCost { get; init; }
     public string? RegistrationUrl { get; init; }
     public DateTime? RegistrationDeadline { get; init; }
     public bool IsFeatured { get; init; }
+
+    /// <summary>
+    /// Statut d'inscription de l'utilisateur courant, **uniquement** renseigné par
+    /// « mes inscriptions » (GET /api/me/registrations) : <c>registered</c> |
+    /// <c>attended</c> | <c>noshow</c> | <c>waitlisted</c>. <c>null</c> ailleurs.
+    /// </summary>
+    public string? MyStatus { get; init; }
 }

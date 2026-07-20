@@ -1,3 +1,4 @@
+import '../../../../core/utils/media_url.dart';
 import '../../domain/entities/user_profile.dart';
 
 class UserProfileModel extends UserProfile {
@@ -17,7 +18,7 @@ class UserProfileModel extends UserProfile {
       id: json['id'] as String,
       name: json['name'] as String,
       email: json['email'] as String,
-      avatarUrl: (json['avatarUrl'] ?? '') as String,
+      avatarUrl: resolveMediaUrl(json['avatarUrl'] as String?),
       totalHearts: (json['totalHearts'] ?? 0) as int,
       completedActivityIds:
           (json['completedActivityIds'] as List<dynamic>? ?? [])

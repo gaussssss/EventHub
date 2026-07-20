@@ -29,11 +29,21 @@ public class Activity : BaseEntity
     public int HeartsReward { get; private set; }
     public int MaxParticipants { get; private set; }
 
+    /// <summary>Coût de participation (informatif, en $ : 0, 10, 20…). Non facturé.</summary>
+    public decimal ParticipationCost { get; private set; }
+
     public string? RegistrationUrl { get; private set; }
     public DateTime? RegistrationDeadline { get; private set; }
 
     public bool IsFeatured { get; private set; }
     public ActivityStatus Status { get; private set; } = ActivityStatus.Published;
+
+    /// <summary>
+    /// Jeton secret encodé dans le QR d'émargement de l'événement. L'étudiant le
+    /// scanne sur place (app mobile) pour auto-confirmer sa présence. Généré à la
+    /// création et stable ; ne transite jamais par les listes publiques.
+    /// </summary>
+    public Guid CheckInToken { get; private set; }
 
     /// <summary>
     /// Jeton de concurrence optimiste. Change à chaque écriture : deux inscriptions
@@ -58,12 +68,15 @@ public class Activity : BaseEntity
         string title, string description, Guid categoryId, Guid? organizerId,
         DateTime startsAt, DateTime? endsAt, string location, string imageUrl,
         int heartsReward, int maxParticipants, string? registrationUrl,
-        DateTime? registrationDeadline, bool isFeatured, ActivityStatus status, DateTime nowUtc)
+        DateTime? registrationDeadline, bool isFeatured, ActivityStatus status,
+        DateTime nowUtc, decimal participationCost = 0m)
     {
         var activity = new Activity();
         activity.Apply(title, description, categoryId, organizerId, startsAt, endsAt,
-            location, imageUrl, heartsReward, maxParticipants, registrationUrl,
-            registrationDeadline, isFeatured, status);
+            location, imageUrl, heartsReward, maxParticipants, participationCost,
+            registrationUrl, registrationDeadline, isFeatured, status);
+        // Jeton d'émargement généré une seule fois, à la création.
+        activity.CheckInToken = Guid.NewGuid();
         activity.MarkCreated(nowUtc);
         return activity;
     }
@@ -98,19 +111,21 @@ public class Activity : BaseEntity
         string title, string description, Guid categoryId, Guid? organizerId,
         DateTime startsAt, DateTime? endsAt, string location, string imageUrl,
         int heartsReward, int maxParticipants, string? registrationUrl,
-        DateTime? registrationDeadline, bool isFeatured, ActivityStatus status, DateTime nowUtc)
+        DateTime? registrationDeadline, bool isFeatured, ActivityStatus status,
+        DateTime nowUtc, decimal participationCost = 0m)
     {
         Apply(title, description, categoryId, organizerId, startsAt, endsAt,
-            location, imageUrl, heartsReward, maxParticipants, registrationUrl,
-            registrationDeadline, isFeatured, status);
+            location, imageUrl, heartsReward, maxParticipants, participationCost,
+            registrationUrl, registrationDeadline, isFeatured, status);
         MarkUpdated(nowUtc);
     }
 
     private void Apply(
         string title, string description, Guid categoryId, Guid? organizerId,
         DateTime startsAt, DateTime? endsAt, string location, string imageUrl,
-        int heartsReward, int maxParticipants, string? registrationUrl,
-        DateTime? registrationDeadline, bool isFeatured, ActivityStatus status)
+        int heartsReward, int maxParticipants, decimal participationCost,
+        string? registrationUrl, DateTime? registrationDeadline, bool isFeatured,
+        ActivityStatus status)
     {
         Title = Guard.AgainstNullOrWhiteSpace(title, nameof(title));
         Description = Guard.AgainstNullOrWhiteSpace(description, nameof(description));
@@ -122,6 +137,7 @@ public class Activity : BaseEntity
         ImageUrl = Guard.AgainstNullOrWhiteSpace(imageUrl, nameof(imageUrl));
         HeartsReward = Guard.AgainstNegative(heartsReward, nameof(heartsReward));
         MaxParticipants = Guard.AgainstNonPositive(maxParticipants, nameof(maxParticipants));
+        ParticipationCost = participationCost < 0 ? 0 : participationCost;
         RegistrationUrl = registrationUrl;
         RegistrationDeadline = registrationDeadline;
         IsFeatured = isFeatured;

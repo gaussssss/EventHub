@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth';
 import { ToastStates } from '../../../../shared/services/infrastructure/states/toastStates';
 
-/** Page de connexion : bouton « Se connecter avec Microsoft » (MSAL popup). */
+/** Page de connexion : bouton « Se connecter avec Microsoft » (MSAL redirection). */
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -18,6 +18,8 @@ export class Login implements OnInit {
   readonly isConfigured = this.auth.isConfigured;
 
   ngOnInit(): void {
+    // Au retour de la redirection Microsoft, `initialize()` a déjà restauré le
+    // compte : si authentifié, on file au tableau de bord.
     if (this.auth.isAuthenticated()) this.router.navigate(['/dashboard']);
   }
 
@@ -31,11 +33,11 @@ export class Login implements OnInit {
 
     this.isLoading.set(true);
     try {
+      // Redirection pleine page : en cas de succès la page se décharge (la
+      // navigation vers /dashboard se fait au retour via ngOnInit).
       await this.auth.login();
-      this.router.navigate(['/dashboard']);
     } catch {
       this.toasts.error('Échec de la connexion Microsoft.');
-    } finally {
       this.isLoading.set(false);
     }
   }

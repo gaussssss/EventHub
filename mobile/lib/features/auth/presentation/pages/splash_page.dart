@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../providers/auth_provider.dart';
 
@@ -63,32 +62,23 @@ class _SplashPageState extends ConsumerState<SplashPage>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Logo officiel sur carte blanche (le fond du splash est vert ;
+                // la version light — colorée — a besoin d'une surface claire).
+                // Le wordmark est dans le logo : plus de titre texte redondant.
                 Container(
-                  width: 100,
-                  height: 100,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 28, vertical: 24),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(28),
                   ),
-                  child: const Center(
-                    child: Icon(
-                      Iconsax.heart_copy,
-                      color: AppColors.primary,
-                      size: 52,
-                    ),
+                  child: Image.asset(
+                    'assets/logo/logo_light.png',
+                    height: 96,
+                    fit: BoxFit.contain,
                   ),
                 ),
                 const SizedBox(height: 24),
-                const Text(
-                  'EventHub',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -1,
-                  ),
-                ),
-                const SizedBox(height: 8),
                 const Text(
                   'Bougez, participez, gagnez',
                   style: TextStyle(

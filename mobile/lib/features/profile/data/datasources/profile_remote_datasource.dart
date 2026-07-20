@@ -14,4 +14,11 @@ class ProfileRemoteDataSource {
     final data = await _client.get('/api/me');
     return UserProfileModel.fromJson(data as Map<String, dynamic>);
   }
+
+  /// `POST /api/me/avatar` → enregistre le chemin de la photo déjà uploadée
+  /// (via `POST /api/uploads/image`). Renvoie l'URL persistée côté serveur.
+  Future<String> setAvatar(String url) async {
+    final data = await _client.post('/api/me/avatar', data: {'avatarUrl': url});
+    return (data as Map<String, dynamic>)['avatarUrl'] as String;
+  }
 }

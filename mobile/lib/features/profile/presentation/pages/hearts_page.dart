@@ -6,6 +6,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/platform_icons.dart';
 import '../../../../core/widgets/async_value_widget.dart';
+import '../../../stats/presentation/providers/stats_provider.dart';
 import '../../domain/entities/leaderboard_entry.dart';
 import '../../domain/entities/user_profile.dart';
 import '../providers/profile_provider.dart';
@@ -31,7 +32,16 @@ class HeartsPage extends ConsumerWidget {
       body: AsyncValueWidget<UserProfile>(
         value: userAsync,
         onRetry: () => ref.invalidate(currentUserProvider),
-        data: (user) => SingleChildScrollView(
+        data: (user) => RefreshIndicator(
+          color: AppColors.primary,
+          onRefresh: () async {
+            ref.invalidate(currentUserProvider);
+            ref.invalidate(leaderboardProvider);
+            ref.invalidate(communityStatsProvider);
+            await ref.read(currentUserProvider.future);
+          },
+          child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           children: [
             Container(
@@ -172,6 +182,7 @@ class HeartsPage extends ConsumerWidget {
           ],
         ),
       ),
+        ),
         ),
     );
   }

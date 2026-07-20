@@ -10,6 +10,7 @@ export interface ActivityRequest {
   imageUrl: string;
   heartsReward: number;
   maxParticipants: number;
+  participationCost: number;
   registrationUrl?: string | null;
   registrationDeadline?: string | null;
   isFeatured: boolean;

@@ -35,7 +35,8 @@ public sealed class UpdateActivityHandler
             command.Title, command.Description, command.CategoryId, command.OrganizerId,
             command.StartsAt, command.EndsAt, command.Location, command.ImageUrl,
             command.HeartsReward, command.MaxParticipants, command.RegistrationUrl,
-            command.RegistrationDeadline, command.IsFeatured, command.Status, _clock.UtcNow);
+            command.RegistrationDeadline, command.IsFeatured, command.Status, _clock.UtcNow,
+            command.ParticipationCost);
 
         await _activities.SaveChangesAsync(cancellationToken);
         return UpdateActivityStatus.Updated;

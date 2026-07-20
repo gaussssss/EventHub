@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/brand_logo.dart';
 import '../providers/auth_provider.dart';
 
 class LoginPage extends ConsumerWidget {
@@ -36,33 +37,8 @@ class LoginPage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(flex: 2),
-              Center(
-                child: Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  child: const Icon(
-                    Iconsax.heart_copy,
-                    color: Colors.white,
-                    size: 46,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 28),
-              const Text(
-                'EventHub',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textDark,
-                  letterSpacing: -1,
-                ),
-              ),
-              const SizedBox(height: 8),
+              const Center(child: BrandLogo(height: 108)),
+              const SizedBox(height: 20),
               const Text(
                 'Bougez, participez, gagnez des cœurs santé',
                 textAlign: TextAlign.center,
@@ -120,7 +96,7 @@ class LoginPage extends ConsumerWidget {
               const Spacer(),
               const Center(
                 child: Text(
-                  'UQTR — Université du Québec à Trois-Rivières',
+                  'UQTR, Université du Québec à Trois-Rivières',
                   style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textLight,

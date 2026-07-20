@@ -27,7 +27,7 @@ class EventHubApp extends ConsumerWidget {
     });
 
     return MaterialApp.router(
-      title: 'EventHub',
+      title: 'UQTR en santé',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: router,

@@ -15,10 +15,11 @@ public sealed record SeedResult(
 /// <summary>
 /// Seeder de données de DÉVELOPPEMENT. Génère un jeu réaliste (faux users +
 /// activités + inscriptions + cœurs + social) pour peupler le back-office et
-/// l'app. Les données de seed sont TAGUÉES (users/organisateurs en
-/// <c>@seed.local</c>, catégories en slug <c>seed-*</c>) et un reseed commence
-/// par les effacer — sans jamais toucher aux vrais utilisateurs du tenant
-/// (ceux-là ont un <c>EntraObjectId</c> et un courriel réel).
+/// l'app. Les données produites n'exhibent AUCUN marqueur visible (pas de
+/// préfixe « [seed] », courriels réalistes) : le reseed les identifie par des
+/// marqueurs invisibles — users à <c>EntraObjectId == null</c> (les vrais
+/// membres du tenant en ont toujours un), catégories/organisateurs par listes
+/// fixes connues du seeder — et efface aussi les données d'anciens seeds tagués.
 ///
 /// Les faux users ont <c>EntraObjectId = null</c> : ils n'ont aucune identité
 /// Microsoft et ne peuvent donc jamais se connecter — ils n'existent que comme
@@ -26,8 +27,17 @@ public sealed record SeedResult(
 /// </summary>
 public sealed class DevDataSeeder
 {
-    private const string SeedEmailDomain = "@seed.local";
-    private const string SeedSlugPrefix = "seed-";
+    // Marqueurs d'anciens seeds (nettoyés au reset, plus jamais générés).
+    private const string LegacyEmailDomain = "@seed.local";
+    private const string LegacySlugPrefix = "seed-";
+
+    /// <summary>Slugs des catégories gérées par le seeder (clé de reset).</summary>
+    private static readonly string[] SeedCategorySlugs =
+        { "sport", "socioculturel", "sante", "academique", "benevolat" };
+
+    /// <summary>Noms des organisateurs gérés par le seeder (clé de reset).</summary>
+    private static readonly string[] SeedOrganizerNames =
+        { "AGE UQTR", "Service des sports", "Vie étudiante", "Bureau de la santé" };
 
     private readonly EventHubDbContext _db;
     private readonly UserManager<ApplicationUser> _users;
@@ -48,16 +58,22 @@ public sealed class DevDataSeeder
 
     private async Task ResetAsync(CancellationToken ct)
     {
+        // Faux users = jamais d'identité Microsoft (EntraObjectId null). Les vrais
+        // membres du tenant en reçoivent toujours un au provisioning JIT — ils ne
+        // sont donc jamais touchés. Couvre aussi les anciens users @seed.local.
         var seedUserIds = await _db.Users
-            .Where(u => u.Email != null && u.Email.EndsWith(SeedEmailDomain))
+            .Where(u => u.EntraObjectId == null)
             .Select(u => u.Id).ToListAsync(ct);
 
         var seedCategoryIds = await _db.Categories
-            .Where(c => c.Slug.StartsWith(SeedSlugPrefix))
+            .Where(c => c.Slug.StartsWith(LegacySlugPrefix)
+                        || SeedCategorySlugs.Contains(c.Slug))
             .Select(c => c.Id).ToListAsync(ct);
 
         var seedOrganizerIds = await _db.Organizers
-            .Where(o => o.ContactEmail != null && o.ContactEmail.EndsWith(SeedEmailDomain))
+            .Where(o => (o.ContactEmail != null && o.ContactEmail.EndsWith(LegacyEmailDomain))
+                        || o.Name.StartsWith("[seed]")
+                        || SeedOrganizerNames.Contains(o.Name))
             .Select(o => o.Id).ToListAsync(ct);
 
         var seedActivityIds = await _db.Activities
@@ -107,46 +123,66 @@ public sealed class DevDataSeeder
         { "Tremblay", "Gagnon", "Roy", "Côté", "Bouchard", "Gauthier", "Morin", "Lavoie",
           "Fortin", "Gagné", "Ouellet", "Pelletier", "Bélanger", "Lévesque", "Bergeron" };
 
+    /// <summary>« Émma » → « emma » : minuscules sans diacritiques (courriels).</summary>
+    private static string Slugify(string value)
+    {
+        var normalized = value.Normalize(System.Text.NormalizationForm.FormD);
+        var builder = new System.Text.StringBuilder(normalized.Length);
+        foreach (var c in normalized)
+        {
+            if (System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c)
+                != System.Globalization.UnicodeCategory.NonSpacingMark)
+            {
+                builder.Append(c);
+            }
+        }
+        return builder.ToString().ToLowerInvariant();
+    }
+
     private async Task<SeedResult> SeedAsync(CancellationToken ct)
     {
         var now = DateTime.UtcNow;
         var rnd = new Random(20260705); // déterministe
 
-        // 1) Catégories
+        // 1) Catégories (slugs propres, cf. SeedCategorySlugs pour le reset)
         var categories = new[]
         {
-            Category.Create("seed-sport", "Sport & plein air", "#107c10", "sport"),
-            Category.Create("seed-culture", "Socioculturel", "#8764b8", "culture"),
-            Category.Create("seed-sante", "Santé & bien-être", "#00b7c3", "sante"),
-            Category.Create("seed-academique", "Académique", "#0078d4", "academique"),
-            Category.Create("seed-benevolat", "Bénévolat", "#d83b01", "benevolat"),
+            Category.Create("sport", "Sport & plein air", "#107c10", "sport"),
+            Category.Create("socioculturel", "Socioculturel", "#8764b8", "culture"),
+            Category.Create("sante", "Santé & bien-être", "#00b7c3", "sante"),
+            Category.Create("academique", "Académique", "#0078d4", "academique"),
+            Category.Create("benevolat", "Bénévolat", "#d83b01", "benevolat"),
         };
         await _db.Categories.AddRangeAsync(categories, ct);
 
-        // 2) Organisateurs
+        // 2) Organisateurs (noms réels, cf. SeedOrganizerNames pour le reset)
         var organizers = new[]
         {
-            Organizer.Create("[seed] AGE UQTR", "age@seed.local"),
-            Organizer.Create("[seed] Service des sports", "sports@seed.local"),
-            Organizer.Create("[seed] Vie étudiante", "vie@seed.local"),
-            Organizer.Create("[seed] Bureau de la santé", "sante@seed.local"),
+            Organizer.Create("AGE UQTR", "age@uqtr.ca"),
+            Organizer.Create("Service des sports", "sports@uqtr.ca"),
+            Organizer.Create("Vie étudiante", "vie.etudiante@uqtr.ca"),
+            Organizer.Create("Bureau de la santé", "sante@uqtr.ca"),
         };
         await _db.Organizers.AddRangeAsync(organizers, ct);
         await _db.SaveChangesAsync(ct); // catégories + organisateurs => Ids
 
-        // 3) Faux utilisateurs (jamais de login : EntraObjectId null, sans mdp)
+        // 3) Faux utilisateurs (jamais de login : EntraObjectId null, sans mdp).
+        //    Courriels réalistes prenom.nom##@uqtr.ca (## garantit l'unicité).
         var users = new List<ApplicationUser>();
         for (var i = 0; i < 40; i++)
         {
             var first = FirstNames[rnd.Next(FirstNames.Length)];
             var last = LastNames[rnd.Next(LastNames.Length)];
-            var email = $"user{i:D2}{SeedEmailDomain}";
+            var email = $"{Slugify(first)}.{Slugify(last)}{i:D2}@uqtr.ca";
             var user = new ApplicationUser
             {
                 Id = Guid.NewGuid(),
                 UserName = email,
                 Email = email,
                 Name = $"{first} {last}",
+                // Photo de profil déterministe (pravatar : 70 visages). URL absolue
+                // externe : s'affiche telle quelle, indépendante de notre domaine.
+                AvatarUrl = $"https://i.pravatar.cc/150?img={(i % 70) + 1}",
                 Status = "active",
                 EntraObjectId = null,
                 EmailConfirmed = true,
@@ -170,6 +206,16 @@ public sealed class DevDataSeeder
             "Atelier cuisine", "Match d'impro", "Marche solidaire",
         };
 
+        var descriptions = new[]
+        {
+            "Rejoignez-nous pour un moment convivial ouvert à toute la communauté UQTR. Les places sont limitées, inscrivez-vous tôt !",
+            "Une belle occasion de bouger, de rencontrer du monde et d'accumuler des cœurs santé.",
+            "Activité encadrée par une équipe d'animation d'expérience. Aucun prérequis, tous les niveaux sont bienvenus.",
+            "Apportez votre bonne humeur ! Collations et matériel fournis sur place.",
+            "Un classique de la vie étudiante à ne pas manquer cette session.",
+            "Venez décrocher, ça fait du bien au corps et à la tête. On vous attend en grand nombre !",
+        };
+
         var activities = new List<Activity>();
         for (var i = 0; i < titles.Length; i++)
         {
@@ -180,7 +226,7 @@ public sealed class DevDataSeeder
             var organizer = organizers[i % organizers.Length];
             var activity = Activity.Create(
                 title: titles[i],
-                description: $"Activité de démonstration « {titles[i]} » générée pour le développement.",
+                description: descriptions[i % descriptions.Length],
                 categoryId: category.Id,
                 organizerId: organizer.Id,
                 startsAt: startsAt,
@@ -189,24 +235,47 @@ public sealed class DevDataSeeder
                 imageUrl: $"https://picsum.photos/seed/act{i}/800/450",
                 heartsReward: new[] { 10, 20, 25, 30, 40, 50 }[rnd.Next(6)],
                 maxParticipants: new[] { 10, 15, 20, 25, 30 }[rnd.Next(5)],
-                registrationUrl: i % 4 == 0 ? "https://forms.gle/exemple" : null,
+                // L'URL d'inscription est requise (webview) : une page réelle qui
+                // charge, le bouton « J'ai soumis le formulaire » fait le reste.
+                registrationUrl: "https://www.uqtr.ca",
                 registrationDeadline: startsAt.AddDays(-1),
                 isFeatured: i % 5 == 0,
                 status: status,
-                nowUtc: now);
+                nowUtc: now,
+                participationCost: new[] { 0m, 0m, 10m, 20m }[i % 4]);
             activities.Add(activity);
         }
         await _db.Activities.AddRangeAsync(activities, ct);
         await _db.SaveChangesAsync(ct); // activités => Ids
 
-        // 5) Inscriptions + crédits de cœurs
+        // 5) Inscriptions + crédits de cœurs.
+        //    Activités PASSÉES : remplies (historique réaliste). Activités À VENIR :
+        //    on laisse des places libres (40–75 % d'occupation) pour pouvoir
+        //    s'inscrire depuis l'app — sauf 1 sur 4, pleine + liste d'attente,
+        //    afin de tester aussi les parcours « Complet »/« waitlist ».
         var registrations = 0;
         var heartsCount = 0;
+        var futureIndex = 0;
         foreach (var activity in activities.Where(a => a.Status == ActivityStatus.Published))
         {
             var isPast = activity.StartsAt < now;
             var shuffled = users.OrderBy(_ => rnd.Next()).ToList();
-            var take = Math.Min(shuffled.Count, activity.MaxParticipants + rnd.Next(0, 5));
+            int take;
+            if (isPast)
+            {
+                take = Math.Min(shuffled.Count, activity.MaxParticipants + rnd.Next(0, 5));
+            }
+            else if (futureIndex++ % 4 == 3)
+            {
+                // Pleine + 2 à 4 en liste d'attente.
+                take = Math.Min(shuffled.Count, activity.MaxParticipants + rnd.Next(2, 5));
+            }
+            else
+            {
+                // 40–75 % des places occupées → il reste toujours de la place.
+                take = Math.Min(shuffled.Count,
+                    Math.Max(1, activity.MaxParticipants * rnd.Next(40, 76) / 100));
+            }
             for (var idx = 0; idx < take; idx++)
             {
                 var user = shuffled[idx];
@@ -279,8 +348,8 @@ public sealed class DevDataSeeder
         var reports = 0;
         var reportReasons = new[]
         {
-            "Contenu inapproprié (démo).", "Propos déplacés (démo).",
-            "Spam / hors-sujet (démo).", "Harcèlement présumé (démo).",
+            "Contenu inapproprié.", "Propos déplacés.",
+            "Spam / hors-sujet.", "Harcèlement présumé.",
         };
         foreach (var post in posts.Take(2))
         {

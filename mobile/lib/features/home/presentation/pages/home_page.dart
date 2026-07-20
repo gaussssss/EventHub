@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +8,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
+import '../../../../core/widgets/brand_logo.dart';
 import '../../../activities/domain/entities/activity.dart';
 import '../../../activities/presentation/providers/activity_provider.dart';
 import '../../../activities/presentation/widgets/activity_filter_sheet.dart';
@@ -62,32 +65,10 @@ class HomePage extends ConsumerWidget {
               floating: true,
               snap: true,
               elevation: 0,
-              title: Row(
-                children: [
-                  Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.primary, AppColors.primaryGlow],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(Iconsax.heart_copy,
-                        color: Colors.white, size: 18),
-                  ),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'EventHub',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                ],
+              // Logo officiel (thémé clair/sombre) à la place de l'ancien cœur.
+              title: const Align(
+                alignment: Alignment.centerLeft,
+                child: BrandLogo(height: 40),
               ),
               actions: [
                 _AppUsersBadge(totalUsers: totalUsers),
@@ -135,7 +116,7 @@ class HomePage extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Mes inscriptions',
+                      'Calendrier',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -319,9 +300,32 @@ class _FeaturedCarousel extends StatefulWidget {
 
 class _FeaturedCarouselState extends State<_FeaturedCarousel> {
   final _controller = PageController(viewportFraction: 0.88);
+  Timer? _timer;
+  int _current = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _startAutoSlide();
+  }
+
+  /// Défilement automatique (boucle) toutes les 4 s dès qu'il y a ≥ 2 cartes.
+  void _startAutoSlide() {
+    if (widget.activities.length < 2) return;
+    _timer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!_controller.hasClients) return;
+      final next = (_current + 1) % widget.activities.length;
+      _controller.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
 
   @override
   void dispose() {
+    _timer?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -334,6 +338,7 @@ class _FeaturedCarouselState extends State<_FeaturedCarousel> {
           height: 228,
           child: PageView.builder(
             controller: _controller,
+            onPageChanged: (i) => _current = i,
             itemCount: widget.activities.length,
             itemBuilder: (context, index) {
               final activity = widget.activities[index];

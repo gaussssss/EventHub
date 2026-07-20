@@ -11,8 +11,11 @@ export interface ActivityDetailDto {
   imageUrl: string;
   heartsReward: number;
   maxParticipants: number;
+  participationCost: number;
   registrationUrl?: string | null;
   registrationDeadline?: string | null;
   isFeatured: boolean;
   status: string;
+  /** Jeton d'émargement (encodé dans le QR de présence). */
+  checkInToken: string;
 }

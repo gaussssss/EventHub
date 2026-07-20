@@ -9,8 +9,11 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../../../core/widgets/async_value_widget.dart';
+import '../../../../core/config/app_config.dart';
 import '../../../activities/presentation/providers/activity_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../social/presentation/providers/post_provider.dart';
+import '../../../stats/presentation/providers/stats_provider.dart';
 import '../../domain/entities/user_profile.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/heart_stat_card.dart';
@@ -45,6 +48,11 @@ class ProfilePage extends ConsumerWidget {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Iconsax.info_circle, size: 20),
+            tooltip: 'À propos',
+            onPressed: () => context.push('/about'),
+          ),
+          IconButton(
             icon: const Icon(Iconsax.edit, size: 20),
             onPressed: userAsync.valueOrNull == null
                 ? null
@@ -63,7 +71,16 @@ class ProfilePage extends ConsumerWidget {
         onRetry: () => ref.invalidate(currentUserProvider),
         data: (user) {
           final completedActivities = myRegistrations;
-          return SingleChildScrollView(
+          return RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: () async {
+              ref.invalidate(currentUserProvider);
+              ref.invalidate(myRegistrationsProvider);
+              ref.invalidate(communityStatsProvider);
+              await ref.read(currentUserProvider.future);
+            },
+            child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           children: [
             Container(
@@ -280,6 +297,7 @@ class ProfilePage extends ConsumerWidget {
             ],
           ],
         ),
+          ),
           );
         },
       ),
@@ -368,8 +386,33 @@ class ProfilePage extends ConsumerWidget {
       maxHeight: 512,
       imageQuality: 85,
     );
-    if (file != null) {
-      ref.read(avatarUrlProvider.notifier).state = file.path;
+    if (file == null) return;
+
+    // Aperçu immédiat : on affiche la photo locale tout de suite.
+    ref.read(avatarUrlProvider.notifier).state = file.path;
+
+    // En démo hors-ligne (mock), pas de persistance serveur.
+    if (AppConfig.useMockData) return;
+
+    try {
+      // 1) upload du fichier → chemin servi par l'API (relatif).
+      final url =
+          await ref.read(uploadRemoteDataSourceProvider).uploadImage(file.path);
+      // 2) on l'enregistre sur le profil (persisté en base).
+      await ref.read(profileRemoteDataSourceProvider).setAvatar(url);
+      // 3) recharge le profil serveur (avatar officiel) et retire l'aperçu local.
+      ref.invalidate(currentUserProvider);
+      ref.read(avatarUrlProvider.notifier).state = null;
+    } catch (_) {
+      // Échec : on retire l'aperçu (retour à l'avatar serveur) et on prévient.
+      ref.read(avatarUrlProvider.notifier).state = null;
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Échec de la mise à jour de la photo. Réessayez.'),
+          ),
+        );
+      }
     }
   }
 

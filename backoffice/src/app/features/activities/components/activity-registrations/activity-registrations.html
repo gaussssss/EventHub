@@ -8,10 +8,15 @@
       </a>
       <h1 class="text-2xl font-semibold mt-1">Inscrits &amp; présence</h1>
       <p class="text-sm text-base-content/60 mt-0.5">
-        Cochez les présents puis validez — les cœurs sont crédités à la présence.
+        Cochez les présents puis validez, les cœurs sont crédités à la présence.
       </p>
     </div>
     <div class="flex items-center gap-2">
+      <button class="btn btn-outline btn-sm gap-1" (click)="showQr.set(true)"
+        [disabled]="!edit.detail()">
+        <span class="icon-[fluent--qr-code-24-regular]"></span>
+        QR d'émargement
+      </button>
       <button class="btn btn-ghost btn-sm" (click)="selectAll()">Tout sélectionner</button>
       <button
         class="btn btn-primary btn-sm gap-1"
@@ -27,32 +32,62 @@
     </div>
   </div>
 
-  <!-- Bandeau de statistiques -->
+  <!-- Bandeau de statistiques (cliquable → filtre la liste par statut) -->
   @if (stats.dashboard(); as d) {
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-      <div class="bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)] p-3">
+      <button type="button" (click)="setFilter(null)"
+        class="text-left bg-base-100 border rounded-[var(--az-radius-lg)] p-3 transition hover:border-primary/60"
+        [class.border-primary]="statusFilter() === null" [class.border-base-300]="statusFilter() !== null">
         <div class="text-xl font-semibold tabular-nums">{{ pct(d.fillRate) }}</div>
         <div class="text-xs text-base-content/60">Remplissage</div>
         <div class="text-[11px] text-base-content/40">{{ d.registered + d.attended }}/{{ d.maxParticipants }} places</div>
-      </div>
-      <div class="bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)] p-3">
+      </button>
+      <button type="button" (click)="setFilter('attended')"
+        class="text-left bg-base-100 border rounded-[var(--az-radius-lg)] p-3 transition hover:border-success/60"
+        [class.border-success]="statusFilter() === 'attended'" [class.border-base-300]="statusFilter() !== 'attended'">
         <div class="text-xl font-semibold tabular-nums text-success">{{ d.attended }}</div>
         <div class="text-xs text-base-content/60">Présents</div>
         <div class="text-[11px] text-base-content/40">{{ pct(d.attendanceRate) }} de présence</div>
-      </div>
-      <div class="bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)] p-3">
+      </button>
+      <button type="button" (click)="setFilter('noshow')"
+        class="text-left bg-base-100 border rounded-[var(--az-radius-lg)] p-3 transition hover:border-error/60"
+        [class.border-error]="statusFilter() === 'noshow'" [class.border-base-300]="statusFilter() !== 'noshow'">
         <div class="text-xl font-semibold tabular-nums text-error">{{ d.noShow }}</div>
         <div class="text-xs text-base-content/60">No-show</div>
         <div class="text-[11px] text-base-content/40">{{ pct(d.noShowRate) }} des issues</div>
-      </div>
-      <div class="bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)] p-3">
+      </button>
+      <button type="button" (click)="setFilter('waitlisted')"
+        class="text-left bg-base-100 border rounded-[var(--az-radius-lg)] p-3 transition hover:border-warning/60"
+        [class.border-warning]="statusFilter() === 'waitlisted'" [class.border-base-300]="statusFilter() !== 'waitlisted'">
         <div class="text-xl font-semibold tabular-nums text-warning">{{ d.waitlisted }}</div>
         <div class="text-xs text-base-content/60">Liste d'attente</div>
-      </div>
-      <div class="bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)] p-3">
+      </button>
+      <button type="button" (click)="setFilter('registered')"
+        class="text-left bg-base-100 border rounded-[var(--az-radius-lg)] p-3 transition hover:border-info/60"
+        [class.border-info]="statusFilter() === 'registered'" [class.border-base-300]="statusFilter() !== 'registered'">
         <div class="text-xl font-semibold tabular-nums">{{ d.registered }}</div>
         <div class="text-xs text-base-content/60">Inscrits (à venir)</div>
-      </div>
+      </button>
+    </div>
+  }
+
+  <!-- Recherche -->
+  @if (!load.isLoading() && states.rows().length > 0) {
+    <div class="flex items-center gap-2 flex-wrap">
+      <label class="input input-bordered input-sm flex items-center gap-2 w-full sm:max-w-xs">
+        <span class="icon-[fluent--search-24-regular] text-base-content/50"></span>
+        <input type="text" class="grow" placeholder="Rechercher un inscrit (nom, courriel)…"
+          [ngModel]="search()" (ngModelChange)="search.set($event)" />
+      </label>
+      @if (statusFilter() !== null || search()) {
+        <button type="button" class="btn btn-ghost btn-sm gap-1" (click)="setFilter(null); search.set('')">
+          <span class="icon-[fluent--dismiss-24-regular]"></span>
+          Réinitialiser
+        </button>
+      }
+      <span class="text-xs text-base-content/50 ml-auto">
+        {{ filteredRows().length }} / {{ states.rows().length }} inscrit(s)
+      </span>
     </div>
   }
 
@@ -71,8 +106,16 @@
     </div>
   }
 
+  <!-- Aucun résultat après filtre/recherche -->
+  @if (!load.isLoading() && states.rows().length > 0 && filteredRows().length === 0) {
+    <div class="flex flex-col items-center justify-center py-16 gap-2 text-base-content/40">
+      <span class="icon-[fluent--filter-24-regular] text-4xl"></span>
+      <p>Aucun inscrit ne correspond au filtre.</p>
+    </div>
+  }
+
   <!-- Table -->
-  @if (!load.isLoading() && states.rows().length > 0) {
+  @if (!load.isLoading() && filteredRows().length > 0) {
     <div class="overflow-x-auto bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)]">
       <table class="table table-sm">
         <thead>
@@ -84,7 +127,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (row of states.rows(); track row.userId) {
+          @for (row of filteredRows(); track row.userId) {
             <tr class="hover:bg-base-200/60">
               <td>
                 <input
@@ -112,3 +155,34 @@
     </div>
   }
 </div>
+
+<!-- Modale « QR d'émargement » : à projeter/imprimer sur place. Les étudiants le
+     scannent depuis l'app pour confirmer leur présence (et gagner leurs cœurs). -->
+@if (showQr()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4 py-6"
+    (click)="showQr.set(false)">
+    <div class="w-full max-w-md bg-base-100 rounded-[var(--az-radius-lg)] border border-base-300 p-6 flex flex-col items-center gap-3"
+      (click)="$event.stopPropagation()">
+      @if (edit.detail(); as d) {
+        <h2 class="text-lg font-semibold text-center">{{ d.title }}</h2>
+        <p class="text-sm text-base-content/60 text-center">
+          Scannez ce code avec l'app <strong>UQTR en santé</strong> pour confirmer votre présence.
+          @if (d.participationCost > 0) {
+            <span class="block mt-1">Coût de participation : {{ d.participationCost }} $</span>
+          }
+        </p>
+        @if (qrDataUrl(); as url) {
+          <img [src]="url" alt="QR d'émargement" class="w-72 h-72 rounded-lg border border-base-300" />
+        } @else {
+          <div class="w-72 h-72 flex items-center justify-center">
+            <span class="loading loading-spinner loading-lg text-primary"></span>
+          </div>
+        }
+        <p class="text-xs text-base-content/40 text-center">
+          Ce code est propre à cet événement, ne le partagez pas à l'avance.
+        </p>
+      }
+      <button class="btn btn-ghost btn-sm mt-1" (click)="showQr.set(false)">Fermer</button>
+    </div>
+  </div>
+}

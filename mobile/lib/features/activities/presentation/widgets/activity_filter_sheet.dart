@@ -125,7 +125,7 @@ class _ActivityFilterSheetState extends ConsumerState<ActivityFilterSheet> {
                     child: Text(
                       range == null
                           ? 'Toutes les dates'
-                          : '${DateFormatter.date(range.start)} — ${DateFormatter.date(range.end)}',
+                          : '${DateFormatter.date(range.start)}, ${DateFormatter.date(range.end)}',
                       style: TextStyle(
                         fontSize: 15,
                         color: range != null

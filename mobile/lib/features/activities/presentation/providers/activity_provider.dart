@@ -142,6 +142,18 @@ Future<List<Activity>> _loadFiltered(
   return list.where((a) => ids.contains(a.id)).toList();
 }
 
+/// Tous les événements d'un mois donné (passés **inclus**), pour le calendrier
+/// mensuel de l'accueil. La clé de famille est normalisée au 1er du mois.
+final monthActivitiesProvider =
+    FutureProvider.family<List<Activity>, DateTime>((ref, month) {
+  final from = DateTime(month.year, month.month, 1);
+  // Dernier instant du dernier jour du mois (jour 0 du mois suivant = dernier jour).
+  final to = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
+  return ref
+      .watch(activityRepositoryProvider)
+      .getActivities(from: from, to: to);
+});
+
 /// Activités à venir (à partir d'aujourd'hui), **indépendantes du filtre** —
 /// utilisées par la section « Activités à venir » de l'accueil, qui ne doit pas
 /// refléter les filtres du catalogue.
@@ -152,14 +164,15 @@ final upcomingActivitiesProvider = FutureProvider<List<Activity>>((ref) {
       .getActivities(from: DateTime(now.year, now.month, now.day));
 });
 
-/// Activités « à la une » : celles explicitement marquées `IsFeatured` ; si
-/// aucune, on retombe sur les 3 prochaines activités à venir.
+/// Activités « à la une » : **toutes** celles explicitement marquées
+/// `IsFeatured` (le carrousel les fait défiler) ; si aucune n'est marquée, on
+/// retombe sur les 3 prochaines activités à venir.
 final featuredActivitiesProvider = FutureProvider<List<Activity>>((ref) async {
   final repo = ref.watch(activityRepositoryProvider);
   if (!AppConfig.useMockData) {
     final featured =
         await ref.watch(activityRemoteDataSourceProvider).getFeatured();
-    if (featured.isNotEmpty) return featured.take(3).toList();
+    if (featured.isNotEmpty) return featured;
   }
   final now = DateTime.now();
   final upcoming =

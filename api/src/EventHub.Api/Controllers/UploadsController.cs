@@ -30,7 +30,10 @@ public class UploadsController : ControllerBase
 
     /// <summary>
     /// Upload direct d'une image (multipart « file »), stockée en local sous
-    /// <c>wwwroot/uploads</c> et servie en statique. Renvoie l'URL absolue.
+    /// <c>wwwroot/uploads</c> et servie en statique. Renvoie un **chemin relatif**
+    /// (<c>/uploads/…</c>) : on ne persiste jamais le nom de domaine en base, pour
+    /// que les fichiers restent valides si l'hôte change (dev → prod, etc.). Les
+    /// clients résolvent ce chemin contre leur base API configurée.
     /// Stockage de développement — à remplacer par un vrai blob store en prod.
     /// </summary>
     [Authorize]
@@ -57,7 +60,8 @@ public class UploadsController : ControllerBase
             await file.CopyToAsync(stream, cancellationToken);
         }
 
-        var url = $"{Request.Scheme}://{Request.Host}/uploads/{fileName}";
+        // Chemin relatif uniquement — jamais le domaine (portabilité dev/prod).
+        var url = $"/uploads/{fileName}";
         return Ok(new { url });
     }
 }

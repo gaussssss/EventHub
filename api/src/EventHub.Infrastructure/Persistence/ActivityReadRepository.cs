@@ -127,10 +127,12 @@ public sealed class ActivityReadRepository : IActivityReadRepository
                 a.ImageUrl,
                 a.HeartsReward,
                 a.MaxParticipants,
+                a.ParticipationCost,
                 a.RegistrationUrl,
                 a.RegistrationDeadline,
                 a.IsFeatured,
                 a.Status,
+                a.CheckInToken,
             })
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -149,10 +151,12 @@ public sealed class ActivityReadRepository : IActivityReadRepository
             ImageUrl = r.ImageUrl,
             HeartsReward = r.HeartsReward,
             MaxParticipants = r.MaxParticipants,
+            ParticipationCost = r.ParticipationCost,
             RegistrationUrl = r.RegistrationUrl,
             RegistrationDeadline = r.RegistrationDeadline,
             IsFeatured = r.IsFeatured,
             Status = r.Status.ToString().ToLowerInvariant(),
+            CheckInToken = r.CheckInToken,
         };
     }
 
@@ -166,7 +170,35 @@ public sealed class ActivityReadRepository : IActivityReadRepository
                 r.UserId == userId &&
                 r.Status != RegistrationStatus.Cancelled))
             .OrderBy(a => a.StartsAt)
-            .Select(ToDto())
+            .Select(a => new ActivityDto
+            {
+                Id = a.Id,
+                Title = a.Title,
+                Description = a.Description,
+                Category = a.Category!.Slug,
+                Organizer = a.Organizer != null ? a.Organizer.Name : null,
+                StartsAt = a.StartsAt,
+                EndsAt = a.EndsAt,
+                Location = a.Location,
+                ImageUrl = a.ImageUrl,
+                HeartsReward = a.HeartsReward,
+                MaxParticipants = a.MaxParticipants,
+                CurrentParticipants = _db.Registrations.Count(r =>
+                    r.ActivityId == a.Id &&
+                    (r.Status == RegistrationStatus.Registered ||
+                     r.Status == RegistrationStatus.Attended)),
+                ParticipationCost = a.ParticipationCost,
+                RegistrationUrl = a.RegistrationUrl,
+                RegistrationDeadline = a.RegistrationDeadline,
+                IsFeatured = a.IsFeatured,
+                // Statut de l'inscription courante (hors annulées) pour le calendrier.
+                MyStatus = _db.Registrations
+                    .Where(r => r.ActivityId == a.Id &&
+                                r.UserId == userId &&
+                                r.Status != RegistrationStatus.Cancelled)
+                    .Select(r => r.Status.ToString().ToLower())
+                    .FirstOrDefault(),
+            })
             .ToListAsync(cancellationToken);
     }
 
@@ -191,6 +223,7 @@ public sealed class ActivityReadRepository : IActivityReadRepository
             r.ActivityId == a.Id &&
             (r.Status == RegistrationStatus.Registered ||
              r.Status == RegistrationStatus.Attended)),
+        ParticipationCost = a.ParticipationCost,
         RegistrationUrl = a.RegistrationUrl,
         RegistrationDeadline = a.RegistrationDeadline,
         IsFeatured = a.IsFeatured,

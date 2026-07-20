@@ -22,6 +22,7 @@ dependencies:
   smooth_page_indicator: ^2.0.1
   iconsax_flutter: ^1.0.1
   flutter_secure_storage: ^10.3.1
+  mobile_scanner: ^7.3.0
 
 dev_dependencies:
   flutter_test:
@@ -32,7 +33,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/icon/app_icon.png
+    - assets/logo/
 
 # Génération des icônes de lancement (logo cœur EventHub, dégradé vert).
 #   dart run flutter_launcher_icons

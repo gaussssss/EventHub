@@ -30,7 +30,8 @@ public class AdminActivitiesController : ControllerBase
         string? RegistrationUrl,
         DateTime? RegistrationDeadline,
         bool IsFeatured,
-        string? Status);
+        string? Status,
+        decimal ParticipationCost = 0m);
 
     private static ActivityStatus ParseStatus(string? status) =>
         Enum.TryParse<ActivityStatus>(status, ignoreCase: true, out var parsed)
@@ -61,7 +62,8 @@ public class AdminActivitiesController : ControllerBase
             body.Title, body.Description, body.CategoryId, body.OrganizerId,
             body.StartsAt, body.EndsAt, body.Location, body.ImageUrl,
             body.HeartsReward, body.MaxParticipants, body.RegistrationUrl,
-            body.RegistrationDeadline, body.IsFeatured, ParseStatus(body.Status)),
+            body.RegistrationDeadline, body.IsFeatured, ParseStatus(body.Status),
+            body.ParticipationCost),
             cancellationToken);
 
         return result.Status == CreateActivityStatus.CategoryNotFound
@@ -78,7 +80,8 @@ public class AdminActivitiesController : ControllerBase
             id, body.Title, body.Description, body.CategoryId, body.OrganizerId,
             body.StartsAt, body.EndsAt, body.Location, body.ImageUrl,
             body.HeartsReward, body.MaxParticipants, body.RegistrationUrl,
-            body.RegistrationDeadline, body.IsFeatured, ParseStatus(body.Status)),
+            body.RegistrationDeadline, body.IsFeatured, ParseStatus(body.Status),
+            body.ParticipationCost),
             cancellationToken);
 
         return status switch

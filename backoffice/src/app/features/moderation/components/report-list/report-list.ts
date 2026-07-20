@@ -6,6 +6,7 @@ import { LoadReports } from '../../services/application/loadReports';
 import { ModerationStates } from '../../services/infrastructure/states/moderationStates';
 import { ReportDto } from '../../models/reportDto';
 import { HideConfirmModal } from '../modals/hide-confirm/hide-confirm';
+import { resolveMediaUrl } from '../../../../core/utils/media-url';
 
 /** Écran « Modération » : file des signalements + confirmation/masquage. */
 @Component({
@@ -52,5 +53,10 @@ export class ReportList implements OnInit {
 
   shortId(id: string): string {
     return id.slice(0, 8);
+  }
+
+  /** URL d'image affichable (ré-ancrée sur l'origine API, cf. resolveMediaUrl). */
+  mediaUrl(url: string | null | undefined): string {
+    return resolveMediaUrl(url);
   }
 }

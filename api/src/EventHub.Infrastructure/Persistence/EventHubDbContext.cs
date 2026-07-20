@@ -27,6 +27,7 @@ public class EventHubDbContext
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<NotificationSettings> NotificationSettings => Set<NotificationSettings>();
     public DbSet<GamificationSettings> GamificationSettings => Set<GamificationSettings>();
+    public DbSet<Contributor> Contributors => Set<Contributor>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

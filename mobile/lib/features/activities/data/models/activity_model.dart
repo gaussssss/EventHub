@@ -1,3 +1,4 @@
+import '../../../../core/utils/media_url.dart';
 import '../../domain/entities/activity.dart';
 
 class ActivityModel extends Activity {
@@ -16,6 +17,8 @@ class ActivityModel extends Activity {
     required super.currentParticipants,
     super.registrationUrl,
     super.registrationDeadline,
+    super.myStatus,
+    super.participationCost,
   });
 
   /// Construit le modèle depuis la réponse JSON de l'API
@@ -30,7 +33,7 @@ class ActivityModel extends Activity {
       date: DateTime.parse(json['startsAt'] as String).toLocal(),
       location: json['location'] as String,
       organizer: (json['organizer'] ?? '') as String,
-      imageUrl: json['imageUrl'] as String,
+      imageUrl: resolveMediaUrl(json['imageUrl'] as String?),
       hearts: (json['heartsReward'] ?? json['hearts'] ?? 0) as int,
       maxParticipants: json['maxParticipants'] as int,
       currentParticipants: (json['currentParticipants'] ?? 0) as int,
@@ -38,6 +41,9 @@ class ActivityModel extends Activity {
       registrationDeadline: json['registrationDeadline'] == null
           ? null
           : DateTime.parse(json['registrationDeadline'] as String).toLocal(),
+      myStatus: json['myStatus'] as String?,
+      participationCost:
+          ((json['participationCost'] ?? 0) as num).toDouble(),
     );
   }
 

@@ -23,7 +23,7 @@ export class AwardHearts {
     this.repo.adjustHearts(id, request).subscribe({
       next: (result) => {
         this.isSaving.set(false);
-        this.toasts.success(`Cœurs ajustés — nouveau total : ${result.totalHearts}`);
+        this.toasts.success(`Cœurs ajustés, nouveau total : ${result.totalHearts}`);
         callback?.();
         this.loadUsers.handler();
       },

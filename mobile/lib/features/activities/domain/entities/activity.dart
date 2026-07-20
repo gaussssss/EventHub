@@ -19,6 +19,14 @@ class Activity {
   final String? registrationUrl;
   final DateTime? registrationDeadline;
 
+  /// Statut d'inscription de l'utilisateur courant, renseigné uniquement par
+  /// « mes inscriptions » : `registered` | `attended` | `noshow` | `waitlisted`.
+  /// `null` pour une activité vue hors de ce contexte.
+  final String? myStatus;
+
+  /// Coût de participation en $ (0 = gratuit). Purement informatif.
+  final double participationCost;
+
   const Activity({
     required this.id,
     required this.title,
@@ -34,5 +42,7 @@ class Activity {
     required this.currentParticipants,
     this.registrationUrl,
     this.registrationDeadline,
+    this.myStatus,
+    this.participationCost = 0,
   });
 }

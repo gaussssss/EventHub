@@ -45,6 +45,15 @@ class ActivityRemoteDataSource {
         .toList();
   }
 
+  /// `POST /api/activities/{id}/check-in` — auto-émargement : envoie le jeton
+  /// scanné dans le QR de l'événement ; le serveur confirme la présence et
+  /// crédite les cœurs. Renvoie `{status, heartsAwarded, alreadyCheckedIn}`.
+  Future<Map<String, dynamic>> checkIn(String activityId, String token) async {
+    final data = await _client
+        .post('/api/activities/$activityId/check-in', data: {'token': token});
+    return data as Map<String, dynamic>;
+  }
+
   /// `POST /api/activities/{id}/register` — déclare l'inscription au serveur.
   /// (Le webhook Google Form étant différé, c'est l'app qui la déclare, en
   /// transmettant l'`formResponseId` s'il est connu.)

@@ -4,7 +4,7 @@
     <div>
       <h1 class="text-2xl font-semibold">Modération</h1>
       <p class="text-sm text-base-content/60 mt-0.5">
-        File des signalements ouverts — masquez les contenus problématiques.
+        File des signalements ouverts, masquez les contenus problématiques.
       </p>
     </div>
     <button class="btn btn-ghost btn-sm gap-1" (click)="load.handler()">
@@ -57,7 +57,7 @@
                 <div class="flex items-start gap-2">
                   @if (report.targetImageUrl) {
                     <img
-                      [src]="report.targetImageUrl"
+                      [src]="mediaUrl(report.targetImageUrl)"
                       alt="contenu signalé"
                       class="w-10 h-10 rounded-[var(--az-radius)] object-cover border border-base-300 shrink-0" />
                   }

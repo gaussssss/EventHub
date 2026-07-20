@@ -131,7 +131,7 @@ class _RegistrationConfirmationPageState
                   child: Column(
                     children: [
                       const Text(
-                        'Vous avez gagné',
+                        'À gagner',
                         style: TextStyle(
                             fontSize: 14,
                             color: AppColors.textMedium),
@@ -160,6 +160,36 @@ class _RegistrationConfirmationPageState
                           fontSize: 16,
                           color: AppColors.textMedium,
                           fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Les cœurs ne sont PAS crédités à l'inscription : ils le
+                      // sont uniquement après que la présence a été confirmée
+                      // (marquage en back office). Cf. MarkAttendanceHandler.
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.secondary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Iconsax.info_circle,
+                                color: AppColors.secondary, size: 16),
+                            SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                'Attribués après confirmation de votre présence',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.secondary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

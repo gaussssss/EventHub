@@ -1,14 +1,10 @@
 <div class="min-h-screen flex items-center justify-center bg-base-200 px-4">
   <div class="w-full max-w-sm bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)] p-8">
-    <!-- Logo / titre -->
+    <!-- Logo officiel + titre -->
     <div class="flex flex-col items-center text-center gap-1 mb-8">
-      <span
-        class="inline-flex items-center justify-center w-12 h-12 rounded-[var(--az-radius-lg)] text-white text-lg font-bold mb-2"
-        style="background: var(--az-primary)">
-        E
-      </span>
-      <h1 class="text-xl font-semibold">EventHub — Back Office</h1>
-      <p class="text-sm text-base-content/60">Administration UQTR</p>
+      <img src="logo_light.png" alt="UQTR en santé" class="h-20 mb-2" />
+      <h1 class="text-xl font-semibold">Back office</h1>
+      <p class="text-sm text-base-content/60">Administration UQTR en santé</p>
     </div>
 
     <!-- Bouton Microsoft -->
@@ -29,7 +25,7 @@
 
     @if (!isConfigured) {
       <p class="mt-4 text-xs text-warning text-center">
-        ⚠ Entra non configuré — renseigner <code>entra.clientId</code> (app SPA)
+        ⚠ Entra non configuré, renseigner <code>entra.clientId</code> (app SPA)
         dans l'environnement.
       </p>
     }

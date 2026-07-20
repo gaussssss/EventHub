@@ -23,7 +23,7 @@ export class MarkAttendance {
       next: (res) => {
         this.isSaving.set(false);
         this.toasts.success(
-          `${userIds.length} présence(s) enregistrée(s) — ${res.credited} crédit(s) de cœurs.`,
+          `${userIds.length} présence(s) enregistrée(s), ${res.credited} crédit(s) de cœurs.`,
         );
         callback?.();
         this.loadRegistrations.handler(activityId);

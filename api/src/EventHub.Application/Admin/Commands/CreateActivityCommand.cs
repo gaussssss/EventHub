@@ -17,4 +17,5 @@ public sealed record CreateActivityCommand(
     string? RegistrationUrl,
     DateTime? RegistrationDeadline,
     bool IsFeatured,
-    ActivityStatus Status) : ICommand<CreateActivityResult>;
+    ActivityStatus Status,
+    decimal ParticipationCost = 0m) : ICommand<CreateActivityResult>;

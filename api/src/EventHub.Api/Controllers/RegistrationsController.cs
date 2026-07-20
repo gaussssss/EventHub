@@ -1,5 +1,6 @@
 using EventHub.Domain.Services;
 using EventHub.Application.Activities;
+using EventHub.Application.Attendance;
 using EventHub.Application.Common.Messaging;
 using EventHub.Application.Registrations;
 using Microsoft.AspNetCore.Mvc;
@@ -72,6 +73,43 @@ public class RegistrationsController : ControllerBase
                 Ok(new { status = "cancelled", promotedUserId = result.PromotedUserId }),
             CancellationResultStatus.NotRegistered =>
                 NotFound(),
+            _ => StatusCode(StatusCodes.Status500InternalServerError),
+        };
+    }
+
+    public sealed record CheckInRequest(Guid Token);
+
+    /// <summary>
+    /// Auto-émargement via le QR de l'événement (POST /api/activities/{id}/check-in).
+    /// Le corps porte le jeton scanné ; la présence est confirmée et les cœurs crédités.
+    /// </summary>
+    [HttpPost("check-in")]
+    public async Task<IActionResult> CheckIn(
+        Guid activityId,
+        [FromBody] CheckInRequest body,
+        CancellationToken cancellationToken)
+    {
+        var userId = _currentUser.UserId;
+        if (userId is null)
+            return Unauthorized();
+
+        var result = await _sender.Send(
+            new SelfCheckInCommand(activityId, userId.Value, body.Token), cancellationToken);
+
+        // Les issues métier répondent 200 + discriminant `status` : le mobile
+        // affiche le bon message sans décoder des codes HTTP hétérogènes.
+        return result.Status switch
+        {
+            SelfCheckInStatus.Ok => Ok(new
+            {
+                status = "ok",
+                heartsAwarded = result.HeartsAwarded,
+                alreadyCheckedIn = result.AlreadyCheckedIn,
+            }),
+            SelfCheckInStatus.ActivityNotFound => NotFound(),
+            SelfCheckInStatus.InvalidToken => Ok(new { status = "invalidToken" }),
+            SelfCheckInStatus.NotRegistered => Ok(new { status = "notRegistered" }),
+            SelfCheckInStatus.OutsideWindow => Ok(new { status = "outsideWindow" }),
             _ => StatusCode(StatusCodes.Status500InternalServerError),
         };
     }

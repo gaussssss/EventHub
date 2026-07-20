@@ -4,6 +4,7 @@ namespace EventHub.Application.Profile;
 
 /// <summary>
 /// Met à jour l'avatar de l'utilisateur courant (POST /api/me/avatar). Le fichier
-/// est stocké via le service de stockage ; on n'en garde que l'URL publique.
+/// a déjà été uploadé (POST /api/uploads/image) ; on persiste ici le chemin
+/// renvoyé (relatif, sans domaine — cf. UploadsController).
 /// </summary>
-public sealed record UpdateAvatarCommand(Guid UserId, string ContentType) : ICommand<AvatarResult>;
+public sealed record UpdateAvatarCommand(Guid UserId, string AvatarUrl) : ICommand<AvatarResult>;

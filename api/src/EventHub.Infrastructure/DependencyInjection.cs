@@ -59,6 +59,8 @@ public static class DependencyInjection
         services.AddScoped<IPushSender, LoggingPushSender>();
         services.AddSingleton<IStorageService, StubStorageService>();
         services.AddScoped<IGamificationSettingsRepository, GamificationSettingsRepository>();
+        services.AddScoped<IContributorRepository, ContributorRepository>();
+        services.AddScoped<IContributorReadRepository, ContributorReadRepository>();
         services.AddSingleton<IClock, SystemClock>();
 
         // Seeder de données de développement (utilisé par l'endpoint dev-only).

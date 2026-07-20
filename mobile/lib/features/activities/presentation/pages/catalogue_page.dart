@@ -57,7 +57,10 @@ class CataloguePage extends ConsumerWidget {
             Expanded(
               child: AsyncValueWidget<List<Activity>>(
                 value: activitiesAsync,
-                onRetry: () => ref.invalidate(allActivitiesProvider),
+                onRetry: () {
+                  ref.invalidate(filteredActivitiesProvider);
+                  ref.invalidate(categoriesProvider);
+                },
                 data: (all) {
                   final displayed = applySearch(all);
                   return Column(
@@ -83,8 +86,11 @@ class CataloguePage extends ConsumerWidget {
                         child: RefreshIndicator(
                           color: AppColors.primary,
                           onRefresh: () async {
-                            ref.invalidate(allActivitiesProvider);
-                            await ref.read(allActivitiesProvider.future);
+                            // Recharge les données affichées (résultat filtré
+                            // servi par l'API) + les catégories des chips.
+                            ref.invalidate(categoriesProvider);
+                            ref.invalidate(filteredActivitiesProvider);
+                            await ref.read(filteredActivitiesProvider.future);
                           },
                           child: displayed.isEmpty
                               ? ListView(
@@ -307,7 +313,7 @@ class _ActiveFilterRow extends ConsumerWidget {
           if (range != null)
             _RemovableChip(
               label:
-                  '${DateFormatter.date(range.start)} — ${DateFormatter.date(range.end)}',
+                  '${DateFormatter.date(range.start)}, ${DateFormatter.date(range.end)}',
               onRemove: () => notifier.setDateRange(null),
             ),
         ],

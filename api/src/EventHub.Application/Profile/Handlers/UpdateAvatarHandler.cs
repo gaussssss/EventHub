@@ -5,22 +5,23 @@ namespace EventHub.Application.Profile;
 
 public sealed class UpdateAvatarHandler : ICommandHandler<UpdateAvatarCommand, AvatarResult>
 {
-    private readonly IStorageService _storage;
     private readonly IUserProfileService _profiles;
 
-    public UpdateAvatarHandler(IStorageService storage, IUserProfileService profiles)
+    public UpdateAvatarHandler(IUserProfileService profiles)
     {
-        _storage = storage;
         _profiles = profiles;
     }
 
     public async Task<AvatarResult> HandleAsync(
         UpdateAvatarCommand command, CancellationToken cancellationToken = default)
     {
-        var ticket = _storage.CreateUploadTicket("avatars", command.ContentType);
+        // Le fichier est déjà stocké (POST /api/uploads/image) ; on persiste le
+        // chemin fourni tel quel (relatif, résolu côté client contre sa base API).
         var updated = await _profiles.UpdateAvatarAsync(
-            command.UserId, ticket.FileUrl, cancellationToken);
+            command.UserId, command.AvatarUrl, cancellationToken);
 
-        return updated ? new AvatarResult(true, ticket.FileUrl) : new AvatarResult(false, null);
+        return updated
+            ? new AvatarResult(true, command.AvatarUrl)
+            : new AvatarResult(false, null);
     }
 }
