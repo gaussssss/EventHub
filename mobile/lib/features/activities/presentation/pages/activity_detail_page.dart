@@ -42,8 +42,25 @@ class ActivityDetailPage extends ConsumerWidget {
         final spotsLeft =
             activity.maxParticipants - activity.currentParticipants;
         final isFull = spotsLeft <= 0;
+        final now = DateTime.now();
         final deadlinePassed = activity.registrationDeadline != null &&
-            activity.registrationDeadline!.isBefore(DateTime.now());
+            activity.registrationDeadline!.isBefore(now);
+
+        // Statut de MON inscription (présent/absent…) : porté par « mes
+        // inscriptions », pas par le catalogue.
+        Activity? myReg;
+        final myRegs =
+            ref.watch(myRegistrationsProvider).valueOrNull ?? const <Activity>[];
+        for (final a in myRegs) {
+          if (a.id == activity.id) {
+            myReg = a;
+            break;
+          }
+        }
+        final hasAttended = myReg?.myStatus == 'attended';
+        // Fenêtre d'émargement (miroir serveur) : le bouton de scan n'apparaît
+        // que pendant cette période.
+        final checkInOpen = activity.isCheckInOpen(now);
 
         return Scaffold(
       backgroundColor: AppColors.background,
@@ -200,9 +217,39 @@ class ActivityDetailPage extends ConsumerWidget {
                           : AppColors.secondary,
                     ),
                   ],
-                  // Inscrit mais présence pas encore confirmée : les cœurs sont
-                  // crédités au pointage (scan du QR sur place, ou back office).
-                  if (isRegistered) ...[
+                  // Présence déjà confirmée : remerciement.
+                  if (isRegistered && hasAttended) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Iconsax.tick_circle,
+                              color: AppColors.primary, size: 18),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Présence confirmée. Merci de votre participation ! 🎉',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                                height: 1.3,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ]
+                  // Inscrit, présence pas encore confirmée : période de
+                  // confirmation + bouton de scan UNIQUEMENT pendant la fenêtre.
+                  else if (isRegistered) ...[
                     const SizedBox(height: 16),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -211,48 +258,64 @@ class ActivityDetailPage extends ConsumerWidget {
                         color: AppColors.secondary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Row(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Iconsax.info_circle,
+                          const Icon(Iconsax.info_circle,
                               color: AppColors.secondary, size: 18),
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           Expanded(
-                            child: Text(
-                              'Vos points seront attribués après confirmation de présence.',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: AppColors.secondary,
-                                fontWeight: FontWeight.w500,
-                                height: 1.3,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Vos points seront attribués après confirmation de présence.',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.secondary,
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Confirmation sur place (scan du QR) : ${_checkInPeriodLabel(activity)}.',
+                                  style: const TextStyle(
+                                    fontSize: 12.5,
+                                    color: AppColors.secondary,
+                                    height: 1.3,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    // Émargement sur place : scanner le QR affiché par
-                    // l'organisateur confirme la présence (fenêtre horaire
-                    // validée côté serveur).
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: OutlinedButton.icon(
-                        onPressed: () => context.push('/scan'),
-                        icon: const Icon(Iconsax.scan_barcode, size: 20),
-                        label: const Text(
-                          'Scanner ma présence',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w600),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          side: const BorderSide(color: AppColors.primary),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14)),
+                    if (checkInOpen) ...[
+                      const SizedBox(height: 12),
+                      // Visible uniquement pendant la période de confirmation
+                      // (fenêtre re-validée côté serveur au scan).
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: OutlinedButton.icon(
+                          onPressed: () => context.push('/scan'),
+                          icon: const Icon(Iconsax.scan_barcode, size: 20),
+                          label: const Text(
+                            'Scanner ma présence',
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w600),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            side: const BorderSide(color: AppColors.primary),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14)),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
                   const SizedBox(height: 20),
                   const Divider(color: AppColors.divider),
@@ -379,6 +442,23 @@ class ActivityDetailPage extends ConsumerWidget {
     );
       },
     );
+  }
+
+  /// Libellé lisible de la période de confirmation de présence (heure locale) :
+  /// « le 12 mars, de 16 h 00 à 22 h 00 », ou « du … au … » si elle chevauche
+  /// deux jours.
+  static String _checkInPeriodLabel(Activity activity) {
+    final opens = activity.checkInOpensAt;
+    final closes = activity.checkInClosesAt;
+    final sameDay = opens.year == closes.year &&
+        opens.month == closes.month &&
+        opens.day == closes.day;
+    if (sameDay) {
+      return 'le ${DateFormatter.date(opens)}, de ${DateFormatter.time(opens)} '
+          'à ${DateFormatter.time(closes)}';
+    }
+    return 'du ${DateFormatter.date(opens)} ${DateFormatter.time(opens)} '
+        'au ${DateFormatter.date(closes)} ${DateFormatter.time(closes)}';
   }
 
   void _openRegistration(BuildContext context, Activity activity) {

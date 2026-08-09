@@ -72,12 +72,14 @@ class _CheckInScannerPageState extends ConsumerState<CheckInScannerPage> {
           _showResult(
             icon: Iconsax.tick_circle,
             color: AppColors.primary,
-            title: already ? 'Déjà pointé !' : 'Présence confirmée !',
+            title: already
+                ? 'Déjà confirmé, merci !'
+                : 'Merci de votre présence ! 🎉',
             message: already
-                ? 'Votre présence avait déjà été enregistrée.'
+                ? 'Votre présence avait déjà été enregistrée. Bonne activité !'
                 : hearts > 0
-                    ? 'Vous gagnez +$hearts cœurs santé. Bravo !'
-                    : 'Votre présence est enregistrée.',
+                    ? 'Votre présence est confirmée : vous gagnez +$hearts cœurs santé. Bonne activité !'
+                    : 'Votre présence est confirmée. Bonne activité !',
           );
         case 'invalidToken':
           _showResult(

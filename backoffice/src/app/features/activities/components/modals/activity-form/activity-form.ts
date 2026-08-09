@@ -111,15 +111,15 @@ export class ActivityFormModal {
         description: this.description().trim(),
         categoryId: this.categoryId(),
         organizerId: this.organizerId() || null,
-        startsAt: this.startsAt(),
-        endsAt: this.endsAt() || null,
+        startsAt: this.toUtcIso(this.startsAt()) ?? '',
+        endsAt: this.toUtcIso(this.endsAt()),
         location: this.location().trim(),
         imageUrl: this.imageUrl().trim(),
         heartsReward: Number(this.heartsReward()) || 0,
         maxParticipants: Number(this.maxParticipants()) || 0,
         participationCost: Number(this.participationCost()) || 0,
         registrationUrl: this.registrationUrl().trim(),
-        registrationDeadline: this.registrationDeadline() || null,
+        registrationDeadline: this.toUtcIso(this.registrationDeadline()),
         isFeatured: this.isFeatured(),
         status: this.status(),
       },
@@ -132,9 +132,25 @@ export class ActivityFormModal {
     this.edit.clear();
   }
 
-  /** ISO → valeur d'un input datetime-local (YYYY-MM-DDTHH:mm). */
+  /**
+   * Convention de fuseau : l'API stocke et sert de l'**UTC** ; le back-office
+   * saisit et affiche en **heure locale** du navigateur. Ces deux helpers font
+   * la conversion aux frontières (et uniquement là).
+   */
+
+  /** Valeur d'un input datetime-local (heure LOCALE) → ISO UTC pour l'API. */
+  private toUtcIso(local: string): string | null {
+    // `new Date("YYYY-MM-DDTHH:mm")` interprète la valeur en heure locale.
+    return local ? new Date(local).toISOString() : null;
+  }
+
+  /** ISO UTC de l'API → valeur d'un input datetime-local en heure LOCALE. */
   private toInput(iso: string | null | undefined): string {
-    return iso ? iso.slice(0, 16) : '';
+    if (!iso) return '';
+    const d = new Date(iso);
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}` +
+      `T${p(d.getHours())}:${p(d.getMinutes())}`;
   }
 
   private reset(): void {

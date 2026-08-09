@@ -9,6 +9,7 @@ class ActivityModel extends Activity {
     required super.categorySlug,
     required super.categoryLabel,
     required super.date,
+    super.endDate,
     required super.location,
     required super.organizer,
     required super.imageUrl,
@@ -31,6 +32,9 @@ class ActivityModel extends Activity {
       categorySlug: (json['category'] ?? '') as String,
       categoryLabel: _labelFromSlug(json['category'] as String?),
       date: DateTime.parse(json['startsAt'] as String).toLocal(),
+      endDate: json['endsAt'] == null
+          ? null
+          : DateTime.parse(json['endsAt'] as String).toLocal(),
       location: json['location'] as String,
       organizer: (json['organizer'] ?? '') as String,
       imageUrl: resolveMediaUrl(json['imageUrl'] as String?),
@@ -53,6 +57,7 @@ class ActivityModel extends Activity {
         'description': description,
         'category': categorySlug,
         'startsAt': date.toUtc().toIso8601String(),
+        'endsAt': endDate?.toUtc().toIso8601String(),
         'location': location,
         'organizer': organizer,
         'imageUrl': imageUrl,

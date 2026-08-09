@@ -17,6 +17,9 @@ public sealed class SelfCheckInHandler
     : ICommandHandler<SelfCheckInCommand, SelfCheckInResult>
 {
     // Tolérance autour de l'événement pendant laquelle l'émargement est ouvert.
+    // ⚠️ MIROIR côté mobile (Activity.checkInOpensAt/checkInClosesAt) : l'app
+    // affiche la période et masque le bouton de scan hors fenêtre. Toute
+    // modification doit être répercutée des deux côtés.
     private static readonly TimeSpan OpenBefore = TimeSpan.FromHours(2);
     private static readonly TimeSpan OpenAfter = TimeSpan.FromHours(2);
     private static readonly TimeSpan DefaultDuration = TimeSpan.FromHours(4);
