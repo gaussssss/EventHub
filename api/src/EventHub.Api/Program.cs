@@ -78,6 +78,23 @@ builder.Services.AddRateLimiter(options =>
 var authority = builder.Configuration["Authentication:Authority"];
 var entraEnabled = !string.IsNullOrWhiteSpace(authority);
 
+// GARDE-FOU DE SÉCURITÉ : le schéma « Dev » fait confiance aux en-têtes
+// X-User-Id/X-User-Roles (rôles compris) → il équivaut à un accès admin ouvert.
+// Il n'est toléré qu'en développement local et dans le harnais de tests
+// automatisés (environnement « Testing »). Partout ailleurs (Production,
+// Staging…), sans Entra configuré, on REFUSE DE DÉMARRER plutôt que de tourner
+// grand ouvert — un déploiement qui oublierait Authentication:Authority échoue
+// bruyamment au lieu d'exposer un accès admin anonyme.
+var devAuthAllowed =
+    builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing");
+if (!entraEnabled && !devAuthAllowed)
+{
+    throw new InvalidOperationException(
+        "Authentification non configurée dans un environnement non-développement : " +
+        "renseignez Authentication:Authority (Microsoft Entra). Le schéma de " +
+        "développement (en-têtes X-User-Id/X-User-Roles) est interdit ici.");
+}
+
 var authBuilder = builder.Services.AddAuthentication(
     entraEnabled ? "Bearer" : DevAuthenticationHandler.SchemeName);
 
@@ -161,8 +178,20 @@ if (app.Environment.IsDevelopment())
 }
 
 // Fichiers statiques (images uploadées servies depuis wwwroot/uploads).
+// Défense en profondeur : on interdit le sniffing de type (nosniff) et on force
+// le téléchargement plutôt que le rendu inline, de sorte qu'un fichier hostile
+// qui aurait échappé au filtrage d'upload ne s'exécute pas dans le navigateur.
 Directory.CreateDirectory(Path.Combine(app.Environment.ContentRootPath, "wwwroot", "uploads"));
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        var headers = ctx.Context.Response.Headers;
+        headers["X-Content-Type-Options"] = "nosniff";
+        if (ctx.Context.Request.Path.StartsWithSegments("/uploads"))
+            headers["Content-Disposition"] = "attachment";
+    },
+});
 
 app.UseHttpLogging();
 app.UseCors("Default");

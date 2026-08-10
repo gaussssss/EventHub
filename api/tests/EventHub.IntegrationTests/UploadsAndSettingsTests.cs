@@ -25,6 +25,44 @@ public class UploadsAndSettingsTests : IClassFixture<EventHubApiFactory>
         ticket.FileUrl.Should().Contain("/posts/");
     }
 
+    /// <summary>Une vraie image (signature PNG) est acceptée, extension dérivée du type réel.</summary>
+    [Fact]
+    public async Task Upload_image_accepts_real_png()
+    {
+        // Signature PNG minimale (8 octets) suffisante pour la détection.
+        var png = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 1, 2, 3 };
+        var response = await PostImageAsync(png, "image/png", "photo.png");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<UrlRow>();
+        body!.Url.Should().StartWith("/uploads/").And.EndWith(".png");
+    }
+
+    /// <summary>
+    /// Un fichier HTML/SVG déguisé (Content-Type et extension « image ») est REJETÉ :
+    /// la détection se fonde sur les octets réels, pas sur ce que déclare le client.
+    /// </summary>
+    [Fact]
+    public async Task Upload_image_rejects_html_disguised_as_image()
+    {
+        var html = Encoding.UTF8.GetBytes("<html><script>alert(1)</script></html>");
+        var response = await PostImageAsync(html, "image/png", "evil.png");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    private async Task<HttpResponseMessage> PostImageAsync(
+        byte[] bytes, string contentType, string fileName)
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-User-Id", Guid.NewGuid().ToString());
+        using var content = new MultipartFormDataContent();
+        var part = new ByteArrayContent(bytes);
+        part.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+        content.Add(part, "file", fileName);
+        return await client.PostAsync("/api/uploads/image", content);
+    }
+
     [Fact]
     public async Task Upload_avatar_updates_profile()
     {
@@ -79,5 +117,6 @@ public class UploadsAndSettingsTests : IClassFixture<EventHubApiFactory>
 
     private sealed record TicketRow { public string UploadUrl { get; init; } = ""; public string FileUrl { get; init; } = ""; }
     private sealed record AvatarRow { public string AvatarUrl { get; init; } = ""; }
+    private sealed record UrlRow { public string Url { get; init; } = ""; }
     private sealed record SettingsRow { public int SilverThreshold { get; init; } public int GoldThreshold { get; init; } }
 }
