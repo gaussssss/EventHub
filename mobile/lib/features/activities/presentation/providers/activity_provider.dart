@@ -33,13 +33,14 @@ final allActivitiesProvider = FutureProvider<List<Activity>>((ref) {
   return ref.watch(activityRepositoryProvider).getAllActivities();
 });
 
-/// Détail d'une activité, dérivé de [allActivitiesProvider] (pas de second appel
-/// en mode mock ; côté API on pourra brancher `GET /activities/:id`).
-final activityByIdProvider =
-    Provider.family<AsyncValue<Activity?>, String>((ref, id) {
-  return ref.watch(allActivitiesProvider).whenData(
-        (list) => list.where((a) => a.id == id).firstOrNull,
-      );
+/// Détail d'une activité : **rechargé depuis l'API à chaque ouverture** de la
+/// fiche (`GET /api/activities/:id`), pour des infos à jour (places restantes,
+/// coût, dates). `autoDispose` : le cache est jeté dès que la fiche se ferme,
+/// donc chaque ouverture refait l'appel. Pendant le chargement, la page sert la
+/// version déjà connue du catalogue (affichage instantané, cf. detail page).
+final activityByIdProvider = FutureProvider.autoDispose
+    .family<Activity?, String>((ref, id) {
+  return ref.watch(activityRepositoryProvider).getActivityById(id);
 });
 
 /// Nombre d'inscrits (badge accueil), dérivé des stats communautaires

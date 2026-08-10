@@ -26,8 +26,25 @@
     </div>
   }
 
-  <!-- Table -->
+  <!-- Recherche -->
   @if (states.rows().length > 0) {
+    <label class="input input-bordered input-sm flex items-center gap-2 w-full sm:max-w-xs">
+      <span class="icon-[fluent--search-24-regular] text-base-content/50"></span>
+      <input type="text" class="grow" placeholder="Rechercher un nom…"
+        [ngModel]="search()" (ngModelChange)="search.set($event)" />
+    </label>
+  }
+
+  <!-- Aucun résultat de recherche -->
+  @if (states.rows().length > 0 && filteredRows().length === 0) {
+    <div class="flex flex-col items-center justify-center py-12 gap-2 text-base-content/40">
+      <span class="icon-[fluent--search-24-regular] text-4xl"></span>
+      <p>Aucun nom ne correspond sur cette page.</p>
+    </div>
+  }
+
+  <!-- Table -->
+  @if (filteredRows().length > 0) {
     <div class="overflow-x-auto bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)]">
       <table class="table table-sm">
         <thead>
@@ -38,7 +55,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (row of states.rows(); track row.rank) {
+          @for (row of filteredRows(); track row.rank) {
             <tr [class.bg-primary]="row.isMe" [class.bg-opacity-10]="row.isMe">
               <td class="font-semibold tabular-nums">
                 {{ medal(row.rank) }} {{ row.rank }}

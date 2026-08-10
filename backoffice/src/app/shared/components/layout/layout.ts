@@ -27,7 +27,8 @@ export class Layout {
     { label: 'Modération', path: '/moderation', icon: 'icon-[fluent--shield-24-regular]', enabled: true },
     { label: 'Catégories', path: '/categories', icon: 'icon-[fluent--tag-24-regular]', enabled: true },
     { label: 'Organisateurs', path: '/organizers', icon: 'icon-[fluent--people-team-24-regular]', enabled: true },
-    { label: 'Notifications', path: '/notifications', icon: 'icon-[fluent--alert-24-regular]', enabled: true },
+    // Notifications : section masquée à la demande du client (la route et
+    // l'API existent toujours ; ré-ajouter l'entrée ici pour la réactiver).
     { label: 'Paramètres', path: '/settings', icon: 'icon-[fluent--settings-24-regular]', enabled: true },
   ];
 }

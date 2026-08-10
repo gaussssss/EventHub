@@ -4,7 +4,7 @@
     <div>
       <h1 class="text-2xl font-semibold">Catégories</h1>
       <p class="text-sm text-base-content/60 mt-0.5">
-        Gérez les catégories d'activités (slug, libellé, couleur, icône).
+        Gérez les catégories d'activités (libellé, couleur, icône).
       </p>
     </div>
     <button class="btn btn-primary btn-sm gap-1" (click)="openCreate()">
@@ -36,7 +36,6 @@
         <thead>
           <tr class="text-base-content/60">
             <th>Catégorie</th>
-            <th>Slug</th>
             <th>Icône</th>
             <th></th>
           </tr>
@@ -52,7 +51,6 @@
                   <span class="font-medium">{{ category.label }}</span>
                 </div>
               </td>
-              <td class="font-mono text-xs text-base-content/60">{{ category.slug }}</td>
               <td class="text-base-content/60">{{ category.icon || '—' }}</td>
               <td class="text-right">
                 <div class="flex justify-end gap-1">

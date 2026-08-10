@@ -5,14 +5,8 @@
         {{ isEdit() ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}
       </h2>
 
-      <label class="block text-sm font-medium mb-1">Slug</label>
-      <input
-        type="text"
-        class="input input-bordered w-full mb-3"
-        placeholder="ex. sport"
-        [ngModel]="slug()"
-        (ngModelChange)="slug.set($event)" />
-
+      <!-- Le slug est généré automatiquement depuis le libellé (création)
+           et conservé tel quel en édition ; il n'est plus saisi à la main. -->
       <label class="block text-sm font-medium mb-1">Libellé</label>
       <input
         type="text"

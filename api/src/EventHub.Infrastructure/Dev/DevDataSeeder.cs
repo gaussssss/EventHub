@@ -37,7 +37,7 @@ public sealed class DevDataSeeder
 
     /// <summary>Noms des organisateurs gérés par le seeder (clé de reset).</summary>
     private static readonly string[] SeedOrganizerNames =
-        { "AGE UQTR", "Service des sports", "Vie étudiante", "Bureau de la santé" };
+        { "AGE UQTR", "Service des sports", "Vie étudiante", "Bureau de la santé", "CIAS UQTR" };
 
     private readonly EventHubDbContext _db;
     private readonly UserManager<ApplicationUser> _users;
@@ -162,6 +162,7 @@ public sealed class DevDataSeeder
             Organizer.Create("Service des sports", "sports@uqtr.ca"),
             Organizer.Create("Vie étudiante", "vie.etudiante@uqtr.ca"),
             Organizer.Create("Bureau de la santé", "sante@uqtr.ca"),
+            Organizer.Create("CIAS UQTR", "evenements.CIAS@uqtr.ca"),
         };
         await _db.Organizers.AddRangeAsync(organizers, ct);
         await _db.SaveChangesAsync(ct); // catégories + organisateurs => Ids
@@ -245,6 +246,47 @@ public sealed class DevDataSeeder
                 participationCost: new[] { 0m, 0m, 10m, 20m }[i % 4]);
             activities.Add(activity);
         }
+
+        // 4 bis) Activité vitrine réelle : « Dîner de la rentrée 2026 » (affiche
+        // client). Horaires saisis en heure de Trois-Rivières puis convertis en
+        // UTC (convention API), indépendamment du fuseau de la machine de dev.
+        var quebec = TimeZoneInfo.FindSystemTimeZoneById("America/Toronto");
+        DateTime QuebecUtc(int month, int day, int hour, int minute) =>
+            TimeZoneInfo.ConvertTimeToUtc(
+                new DateTime(2026, month, day, hour, minute, 0, DateTimeKind.Unspecified),
+                quebec);
+
+        activities.Add(Activity.Create(
+            title: "Dîner de la rentrée 2026",
+            description:
+                "Dîner de la rentrée 2026, réservez votre place ! 🍽️\n\n" +
+                "Le rendez-vous annuel tant attendu approche ! Rejoignez-nous le " +
+                "mardi 25 août 2026 au Campus de Trois-Rivières pour célébrer la " +
+                "rentrée entre collègues.\n\n" +
+                "📅 Date limite d'inscription : vendredi 14 août 2026 à 17 h\n" +
+                "📍 Lieu : Cour intérieure, près du pavillon Pierre-Boucher\n" +
+                "🥗 Au menu : Saveurs grecques\n" +
+                "💰 Coût : 10 $ (paiement en ligne)\n\n" +
+                "👉 Je m'inscris maintenant !\n\n" +
+                "⏳ Vous partez bientôt en vacances ? Inscrivez-vous avant de " +
+                "partir ! Ne laissez pas la date limite vous dépasser. 😊\n\n" +
+                "Vous souhaitez inscrire un collègue actuellement en congé ? " +
+                "Écrivez-nous à evenements.CIAS@uqtr.ca et nous nous en occuperons.",
+            categoryId: categories[1].Id,  // Socioculturel
+            organizerId: organizers[4].Id, // CIAS UQTR
+            startsAt: QuebecUtc(8, 25, 12, 0),
+            endsAt: QuebecUtc(8, 25, 13, 30),
+            location: "Cour intérieure, près du pavillon Pierre-Boucher",
+            imageUrl: "https://picsum.photos/seed/diner2026/800/450",
+            heartsReward: 20,
+            maxParticipants: 120,
+            registrationUrl: "https://www.uqtr.ca",
+            registrationDeadline: QuebecUtc(8, 14, 17, 0),
+            isFeatured: true,
+            status: ActivityStatus.Published,
+            nowUtc: now,
+            participationCost: 10m));
+
         await _db.Activities.AddRangeAsync(activities, ct);
         await _db.SaveChangesAsync(ct); // activités => Ids
 

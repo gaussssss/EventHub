@@ -34,8 +34,33 @@
     </div>
   }
 
-  <!-- Table -->
+  <!-- Recherche -->
   @if (!load.isLoading() && states.activities().length > 0) {
+    <div class="flex items-center gap-2 flex-wrap">
+      <label class="input input-bordered input-sm flex items-center gap-2 w-full sm:max-w-xs">
+        <span class="icon-[fluent--search-24-regular] text-base-content/50"></span>
+        <input type="text" class="grow"
+          placeholder="Rechercher (titre, catégorie, lieu, statut)…"
+          [ngModel]="search()" (ngModelChange)="search.set($event)" />
+      </label>
+      @if (search()) {
+        <span class="text-xs text-base-content/50">
+          {{ filteredActivities().length }} / {{ states.activities().length }} activité(s)
+        </span>
+      }
+    </div>
+  }
+
+  <!-- Aucun résultat de recherche -->
+  @if (!load.isLoading() && states.activities().length > 0 && filteredActivities().length === 0) {
+    <div class="flex flex-col items-center justify-center py-12 gap-2 text-base-content/40">
+      <span class="icon-[fluent--search-24-regular] text-4xl"></span>
+      <p>Aucune activité ne correspond à la recherche.</p>
+    </div>
+  }
+
+  <!-- Table -->
+  @if (!load.isLoading() && filteredActivities().length > 0) {
     <div class="overflow-x-auto bg-base-100 border border-base-300 rounded-[var(--az-radius-lg)]">
       <table class="table table-sm">
         <thead>
@@ -49,7 +74,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (activity of states.activities(); track activity.id) {
+          @for (activity of filteredActivities(); track activity.id) {
             <tr class="hover:bg-base-200/60" [class.opacity-50]="actions.busyId() === activity.id">
               <td>
                 <div class="font-medium">{{ activity.title }}</div>

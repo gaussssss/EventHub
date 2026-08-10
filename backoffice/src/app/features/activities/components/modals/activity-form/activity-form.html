@@ -85,9 +85,34 @@
         </div>
 
         <div class="sm:col-span-2">
-          <label class="block text-sm font-medium mb-1">Image (URL) *</label>
-          <input type="text" class="input input-bordered w-full" placeholder="https://…"
-            [ngModel]="imageUrl()" (ngModelChange)="imageUrl.set($event)" />
+          <div class="flex items-center justify-between mb-1 gap-3 flex-wrap">
+            <label class="block text-sm font-medium">Image *</label>
+            <!-- Bascule : URL externe ou fichier téléversé depuis le poste. -->
+            <label class="flex items-center gap-2 cursor-pointer text-sm">
+              <input type="checkbox" class="checkbox checkbox-sm"
+                [ngModel]="imageSource() === 'file'"
+                (ngModelChange)="setImageFromPc($event)" />
+              <span>Depuis mon ordinateur</span>
+            </label>
+          </div>
+
+          @if (imageSource() === 'url') {
+            <input type="text" class="input input-bordered w-full" placeholder="https://…"
+              [ngModel]="imageUrl()" (ngModelChange)="imageUrl.set($event)" />
+          } @else {
+            <input type="file" accept="image/*"
+              class="file-input file-input-bordered w-full"
+              (change)="onFileSelected($event)" />
+            @if (imagePreview(); as preview) {
+              <img [src]="preview" alt="aperçu de l'image"
+                class="mt-2 h-28 rounded-[var(--az-radius)] border border-base-300 object-cover" />
+            }
+            @if (isEdit() && !imageFile()) {
+              <p class="text-xs text-base-content/40 mt-1">
+                Sans nouveau fichier, l'image actuelle est conservée.
+              </p>
+            }
+          }
         </div>
 
         <div class="sm:col-span-2">
@@ -126,16 +151,27 @@
             <span class="text-sm">Mettre à la une (carrousel)</span>
           </label>
         </div>
+
+        <!-- Contraintes d'édition non respectées : liste bloquante. -->
+        @if (submitAttempted() && formErrors().length > 0) {
+          <div class="sm:col-span-2 bg-error/10 border border-error/30 rounded-[var(--az-radius)] px-4 py-3">
+            <ul class="text-sm text-error list-disc list-inside space-y-0.5">
+              @for (e of formErrors(); track e) {
+                <li>{{ e }}</li>
+              }
+            </ul>
+          </div>
+        }
       </div>
 
       <div class="px-6 py-4 border-t border-base-300 flex justify-end gap-2">
         <button type="button" class="btn btn-ghost btn-sm" (click)="close()">Annuler</button>
         <button type="button" class="btn btn-primary btn-sm"
-          [disabled]="save.isSaving()" (click)="submit()">
-          @if (save.isSaving()) {
+          [disabled]="save.isSaving() || isUploading()" (click)="submit()">
+          @if (save.isSaving() || isUploading()) {
             <span class="loading loading-spinner loading-xs"></span>
           }
-          {{ isEdit() ? 'Enregistrer' : 'Créer' }}
+          {{ isUploading() ? 'Téléversement…' : isEdit() ? 'Enregistrer' : 'Créer' }}
         </button>
       </div>
     </div>

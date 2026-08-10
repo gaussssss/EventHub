@@ -22,20 +22,33 @@ class ActivityDetailPage extends ConsumerWidget {
     final activityAsync = ref.watch(activityByIdProvider(activityId));
     final registeredIds = ref.watch(registeredActivitiesProvider);
 
-    return activityAsync.when(
-      loading: () => const Scaffold(body: Center(child: AppLoader())),
-      error: (e, _) => Scaffold(
-        body: AppErrorView(
-          message: '$e',
-          onRetry: () => ref.invalidate(allActivitiesProvider),
-        ),
-      ),
-      data: (activity) {
-        if (activity == null) {
-          return const Scaffold(
-            body: Center(child: Text('Activité introuvable')),
-          );
-        }
+    // La fiche recharge l'activité depuis l'API à chaque ouverture (provider
+    // autoDispose). Pour éviter un flash de chargement, on affiche la version
+    // déjà connue du catalogue pendant que la fraîche arrive.
+    final cached = ref
+        .watch(allActivitiesProvider)
+        .valueOrNull
+        ?.where((a) => a.id == activityId)
+        .firstOrNull;
+    final activity =
+        activityAsync.valueOrNull ?? (activityAsync.isLoading ? cached : null);
+
+    if (activity == null) {
+      if (activityAsync.isLoading) {
+        return const Scaffold(body: Center(child: AppLoader()));
+      }
+      if (activityAsync.hasError) {
+        return Scaffold(
+          body: AppErrorView(
+            message: '${activityAsync.error}',
+            onRetry: () => ref.invalidate(activityByIdProvider(activityId)),
+          ),
+        );
+      }
+      return const Scaffold(
+        body: Center(child: Text('Activité introuvable')),
+      );
+    }
 
         final isRegistered = registeredIds.contains(activity.id);
         const categoryColor = AppColors.primary;
@@ -439,8 +452,6 @@ class ActivityDetailPage extends ConsumerWidget {
           ),
         ),
       ),
-    );
-      },
     );
   }
 
