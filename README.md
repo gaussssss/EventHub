@@ -54,7 +54,13 @@ Chaque tier a son README détaillé : [api/](api/README.md),
 
 ## Documentation
 
-- [docs/MOBILE_APP_MANIFEST.md](docs/MOBILE_APP_MANIFEST.md), fonctionnalités et
-  architecture de l'app mobile.
-- [docs/BACKEND_MANIFEST.md](docs/BACKEND_MANIFEST.md), API, schémas BD,
-  back office, contrats JSON et authentification.
+Manifestes techniques (guides de maintenance, fidèles au code) :
+
+- [docs/BACKEND_MANIFEST.md](docs/BACKEND_MANIFEST.md), API .NET 8 : architecture,
+  modèle de données, endpoints, sécurité.
+- [docs/MOBILE_APP_MANIFEST.md](docs/MOBILE_APP_MANIFEST.md), app Flutter :
+  architecture, écrans, configuration.
+- [docs/BACKOFFICE_MANIFEST.md](docs/BACKOFFICE_MANIFEST.md), administration
+  Angular : écrans et points techniques.
+- [docs/RUN_AND_BUILD.md](docs/RUN_AND_BUILD.md), **toutes les commandes** de
+  lancement, build et outillage des trois tiers.
